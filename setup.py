@@ -26,9 +26,7 @@
 ## end license ##
 
 from distutils.core import setup
-from distutils.extension import Extension
 from os import walk
-from os.path import join
 
 packages = []
 for path, dirs, files in walk('meresco'):
