@@ -24,30 +24,30 @@
 #
 ## end license ##
 
-set -o errexit
-rm -rf tmp build
-mydir=$(cd $(dirname $0); pwd)
-source /usr/share/seecr-test/functions
+set -e
+mydir=$(cd $(dirname $0);pwd)
 
-pyversions="2.7"
-if distro_is_redhat; then
-    pyversions="2.6"
+source /usr/share/seecr-tools/functions.d/test
+
+rm -rf tmp build
+
+definePythonVars
+
+$PYTHON setup.py install --root tmp
+cp -r test tmp/test
+
+removeDoNotDistribute tmp
+find tmp -type f -exec sed -e \
+    "s,usrSharePath = .*,usrSharePath = '$mydir/tmp/usr/share/meresco-rdf',;
+    s,documentationPath = .*,documentationPath = '$mydir/tmp/usr/share/doc/meresco-rdf',;
+    s,binDir = '/usr/bin',binDir = '$mydir/tmp/usr/bin',;
+    " -i {} \;
+
+if [ -z "$@" ]; then
+    runtests "alltests.sh"
+else
+    runtests "$@"
 fi
 
-VERSION="x.y.z"
-
-for pyversion in $pyversions; do
-    definePythonVars $pyversion
-    echo "###### $pyversion, $PYTHON"
-    ${PYTHON} setup.py install --root tmp
-done
-cp -r test tmp/test
-removeDoNotDistribute tmp
-find tmp -name '*.py' -exec sed -r -e "
-    s/\\\$Version:[^\\\$]*\\\$/\\\$Version: ${VERSION}\\\$/;
-    " -i '{}' \;
-
-cp -r test tmp/test
-runtests "$@"
 rm -rf tmp build
 
