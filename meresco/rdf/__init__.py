@@ -26,3 +26,4 @@
 from .bnode import BNode
 from .literal import Literal
 from .uri import Uri
+from .plein import Plein

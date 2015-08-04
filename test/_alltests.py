@@ -37,6 +37,7 @@ simplefilter('default')
 from literaltest import LiteralTest
 from uritest import UriTest
 from bnodetest import BNodeTest
+from pleintest import PleinTest
 
 if __name__ == '__main__':
     unittest.main()
