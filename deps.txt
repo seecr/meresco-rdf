@@ -1,7 +1,7 @@
 python-meresco-core (>= 4.0.7)
 python-meresco-core (<< 4.1)
 python-meresco-lucene (>= 0.28.1)
-python-meresco-lucene (<< 0.29)
+python-meresco-lucene (<< 0.30)
 python-meresco-xml (>= 4.2.2)
 python-meresco-xml (<< 4.3)
 python-rfc3987 (>= 1.3.1.1)
