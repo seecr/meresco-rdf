@@ -34,6 +34,7 @@ import unittest
 from warnings import simplefilter
 simplefilter('default')
 
+from annotationtofieldslisttest import AnnotationToFieldsListTest
 from literaltest import LiteralTest
 from uritest import UriTest
 from bnodetest import BNodeTest
