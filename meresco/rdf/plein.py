@@ -1,28 +1,25 @@
 ## begin license ##
 #
-# "NBC+" also known as "ZP (ZoekPlatform)" is
-#  a project of the Koninklijke Bibliotheek
-#  and provides a search service for all public
-#  libraries in the Netherlands.
+# Meresco RDF contains components to handle RDF data.
 #
 # Copyright (C) 2012-2015 Seecr (Seek You Too B.V.) http://seecr.nl
 # Copyright (C) 2012-2014 Stichting Bibliotheek.nl (BNL) http://www.bibliotheek.nl
 # Copyright (C) 2015 Koninklijke Bibliotheek (KB) http://www.kb.nl
 #
-# This file is part of "NBC+ (Zoekplatform BNL)"
+# This file is part of "Meresco RDF"
 #
-# "NBC+ (Zoekplatform BNL)" is free software; you can redistribute it and/or modify
+# "Meresco RDF" is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation; either version 2 of the License, or
 # (at your option) any later version.
 #
-# "NBC+ (Zoekplatform BNL)" is distributed in the hope that it will be useful,
+# "Meresco RDF" is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with "NBC+ (Zoekplatform BNL)"; if not, write to the Free Software
+# along with "Meresco RDF"; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #
 ## end license ##
@@ -61,6 +58,9 @@ class Plein(Observable):
 
     def delete(self, identifier):
         yield self._delete(recordId=str(identifier))
+
+    def commit(self):
+        self._fragmentAdmin.commit()
 
     def close(self):
         self._fragmentAdmin.close()
@@ -113,6 +113,7 @@ class Plein(Observable):
             uriFragments = self._newFragmentsForUri(uri, changes)
             if len(uriFragments) == 0:
                 yield self.all[self._oaiAddRecordLabel].delete(identifier=uri)
+                self.call[self._storageLabel].deleteData(identifier=uri, name='rdf')
             else:
                 self.call[self._oaiAddRecordLabel].addOaiRecord(identifier=uri, **oaiArgs)
                 data = RDF_TEMPLATE % ''.join(fragment.data for fragment in uriFragments.values())

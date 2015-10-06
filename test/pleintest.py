@@ -487,8 +487,35 @@ class PleinTest(SeecrTestCase):
         fragments = [_Fragment.fromEncodedString(s) for s in result.split(' ')]
         self.assertEquals([uri1, uri2, uri3, uri4], [f.uri for f in fragments])
 
+    def testAddDeleteAddForSameUriDifferentIdentifier(self):
+        lxmlNode = parse(StringIO("""<rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:dcterms="http://purl.org/dc/terms/">
+    <skos:Concept rdf:about="http://example.com/first/uri" xmlns:skos="http://www.w3.org/2004/02/skos/core#">
+         <skos:prefLabel xml:lang="nl">Eerste</skos:prefLabel>
+    </skos:Concept>
+</rdf:RDF>"""))
+        consume(self.dna.all.add(identifier='original:one_description', partname="ignored", lxmlNode=lxmlNode))
+        consume(self.dna.all.delete(identifier='original:one_description'))
+        self.assertRaises(KeyError, lambda: self.storage.getData(identifier="http://example.com/first/uri", name='rdf'))
+
+        lxmlNode = parse(StringIO("""<rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:dcterms="http://purl.org/dc/terms/">
+    <skos:Concept rdf:about="http://example.com/first/uri" xmlns:skos="http://www.w3.org/2004/02/skos/core#">
+         <skos:prefLabel xml:lang="nl">Tweede</skos:prefLabel>
+    </skos:Concept>
+</rdf:RDF>"""))
+        consume(self.dna.all.add(identifier='original:two_description', partname="ignored", lxmlNode=lxmlNode))
+
+        record = self.oaiJazz.getRecord("http://example.com/first/uri")
+        self.assertEquals("http://example.com/first/uri", record.identifier)
+        data = self.storage.getData(identifier=record.identifier, name='rdf')
+        self.assertFalse('<skos:prefLabel xml:lang="nl">Eerste</skos:prefLabel>' in data, data)
+        self.assertTrue('<skos:prefLabel xml:lang="nl">Tweede</skos:prefLabel>' in data, data)
+
+    def testCommit(self):
+        self.plein.commit()  # No way to assert anything other than that the method exists.
+
     def _newPlein(self, storageLabel="storage", oaiAddRecordLabel="oaiJazz"):
         return Plein(directory=self.tempdir, storageLabel=storageLabel, oaiAddRecordLabel=oaiAddRecordLabel, rdfxsdUrl='http://example.org/rdf.xsd')
+
 
 def createRdfNode(aboutUri):
     root = XML("""<rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#">
