@@ -1,11 +1,10 @@
-# -*- coding: utf-8 -*-
 ## begin license ##
 #
 # Meresco RDF contains components to handle RDF data.
 #
+# Copyright (C) 2014-2015 Seecr (Seek You Too B.V.) http://seecr.nl
+# Copyright (C) 2014 Stichting Bibliotheek.nl (BNL) http://www.bibliotheek.nl
 # Copyright (C) 2015 Drents Archief http://www.drentsarchief.nl
-# Copyright (C) 2015 Seecr (Seek You Too B.V.) http://seecr.nl
-# Copyright (C) 2015 Stichting Kennisnet http://www.kennisnet.nl
 #
 # This file is part of "Meresco RDF"
 #
@@ -25,26 +24,11 @@
 #
 ## end license ##
 
-from os import getuid
-assert getuid() != 0, "Do not run tests as 'root'"
-
-from seecrdeps import includeParentAndDeps       #DO_NOT_DISTRIBUTE
-includeParentAndDeps(__file__)                   #DO_NOT_DISTRIBUTE
-
-import unittest
-from warnings import simplefilter
-simplefilter('default')
-
-from annotationtofieldslisttest import AnnotationToFieldsListTest
-from literaltest import LiteralTest
-from uritest import UriTest
-from bnodetest import BNodeTest
-from pleintest import PleinTest
-
-from graph.graphcomponenttest import GraphComponentTest
-from graph.graphtest import GraphTest
-from graph.rdfparsertest import RdfParserTest
-from graph.triples2rdfxmltest import Triples2RdfXmlTest
-
-if __name__ == '__main__':
-    unittest.main()
+from .abstract import isGraphElement
+from .uri import Uri, matchesIriSyntax
+from .bnode import BNode
+from .literal import Literal
+from .graph import Graph
+from .graphcomponent import GraphComponent
+from .rdfparser import RDFParser
+from .triples2rdfxml import Triples2RdfXml

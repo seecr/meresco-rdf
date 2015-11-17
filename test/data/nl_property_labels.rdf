@@ -1,0 +1,206 @@
+<!DOCTYPE rdf:RDF [
+    <!ENTITY dc "http://purl.org/dc/elements/1.1/" >
+    <!ENTITY dcterms "http://purl.org/dc/terms/" >
+]>
+<rdf:RDF
+    xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+    xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#"
+    xmlns:owl="http://www.w3.org/2002/07/owl#"
+>
+    <rdf:Description rdf:about="http://www.w3.org/2000/01/rdf-schema#label">
+        <rdfs:label xml:lang="nl">Label</rdfs:label>
+    </rdf:Description>
+    <rdf:Description rdf:about="http://www.w3.org/2000/01/rdf-schema#seeAlso">
+        <rdfs:label xml:lang="nl">zie ook</rdfs:label>
+    </rdf:Description>
+
+    <rdf:Description rdf:about="http://purl.org/dc/elements/1.1/subject">
+        <rdfs:label xml:lang="nl">Onderwerp</rdfs:label>
+    </rdf:Description>
+    <rdf:Description rdf:about="http://purl.org/dc/elements/1.1/description">
+        <rdfs:label xml:lang="nl">Omschrijving</rdfs:label>
+    </rdf:Description>
+    <rdf:Description rdf:about="http://purl.org/dc/elements/1.1/date">
+        <rdfs:label xml:lang="nl">Datum</rdfs:label>
+    </rdf:Description>
+    <rdf:Description rdf:about="http://purl.org/dc/elements/1.1/creator">
+        <rdfs:label xml:lang="nl">Maker</rdfs:label>
+    </rdf:Description>
+    <rdf:Description rdf:about="http://purl.org/dc/elements/1.1/publisher">
+        <rdfs:label xml:lang="nl">Uitgever</rdfs:label>
+    </rdf:Description>
+    <rdf:Description rdf:about="http://purl.org/dc/elements/1.1/contributor">
+        <rdfs:label xml:lang="nl">Bijdrager</rdfs:label>
+        <owl:inverseOf>
+            <rdf:Property>
+                <rdfs:label xml:lang="nl">Heeft bijgedragen aan</rdfs:label>
+            </rdf:Property>
+        </owl:inverseOf>
+    </rdf:Description>
+    <rdf:Description rdf:about="http://purl.org/dc/elements/1.1/source">
+        <rdfs:label xml:lang="nl">Bron</rdfs:label>
+    </rdf:Description>
+    <rdf:Description rdf:about="http://purl.org/dc/elements/1.1/language">
+        <rdfs:label xml:lang="nl">Taal</rdfs:label>
+    </rdf:Description>
+
+    <rdf:Description rdf:about="http://purl.org/dc/terms/title">
+        <rdfs:label xml:lang="nl">Titel</rdfs:label>
+    </rdf:Description>
+    <rdf:Description rdf:about="http://purl.org/dc/terms/abstract">
+        <rdfs:label xml:lang="nl">Inhoud</rdfs:label>
+    </rdf:Description>
+    <rdf:Description rdf:about="http://purl.org/dc/terms/subject">
+        <rdfs:label xml:lang="nl">Onderwerp</rdfs:label>
+    </rdf:Description>
+    <rdf:Description rdf:about="http://purl.org/dc/terms/description">
+        <rdfs:label xml:lang="nl">Omschrijving</rdfs:label>
+    </rdf:Description>
+    <rdf:Description rdf:about="http://purl.org/dc/terms/date">
+        <rdfs:label xml:lang="nl">Datum</rdfs:label>
+    </rdf:Description>
+    <rdf:Description rdf:about="http://purl.org/dc/terms/creator">
+        <rdfs:label xml:lang="nl">Maker</rdfs:label>
+    </rdf:Description>
+    <rdf:Description rdf:about="http://purl.org/dc/terms/publisher">
+        <rdfs:label xml:lang="nl">Uitgever</rdfs:label>
+    </rdf:Description>
+    <rdf:Description rdf:about="http://purl.org/dc/terms/contributor">
+        <rdfs:label xml:lang="nl">Bijdrager</rdfs:label>
+        <owl:inverseOf>
+            <rdf:Property>
+                <rdfs:label xml:lang="nl">Heeft bijgedragen aan</rdfs:label>
+            </rdf:Property>
+        </owl:inverseOf>
+    </rdf:Description>
+    <rdf:Description rdf:about="http://purl.org/dc/terms/spatial">
+        <rdfs:label xml:lang="nl">Locatie</rdfs:label>
+    </rdf:Description>
+    <rdf:Description rdf:about="http://purl.org/dc/terms/alternative">
+        <rdfs:label xml:lang="nl">Alternatieve Titel</rdfs:label>
+    </rdf:Description>
+    <rdf:Description rdf:about="http://purl.org/dc/terms/extent">
+        <rdfs:label xml:lang="nl">Omvang</rdfs:label>
+    </rdf:Description>
+    <rdf:Description rdf:about="http://purl.org/dc/terms/rights">
+        <rdfs:label xml:lang="nl">Rechten</rdfs:label>
+    </rdf:Description>
+    <rdf:Description rdf:about="http://purl.org/dc/terms/source">
+        <rdfs:label xml:lang="nl">Bron</rdfs:label>
+    </rdf:Description>
+    <rdf:Description rdf:about="http://purl.org/dc/terms/isReplacedBy">
+        <rdfs:label xml:lang="nl">Vervangen door</rdfs:label>
+        <owl:inverseOf rdf:resource="&dcterms;replaces"/>
+    </rdf:Description>
+    <rdf:Description rdf:about="http://purl.org/dc/terms/replaces">
+        <rdfs:label xml:lang="nl">Vervangt</rdfs:label>
+        <owl:inverseOf rdf:resource="&dcterms;isReplacedBy"/>
+    </rdf:Description>
+    <rdf:Description rdf:about="http://purl.org/dc/terms/references">
+        <rdfs:label xml:lang="nl">Verwijst naar</rdfs:label>
+        <owl:inverseOf rdf:resource="&dcterms;isReferencedBy"/>
+    </rdf:Description>
+    <rdf:Description rdf:about="http://purl.org/dc/terms/isReferencedBy">
+        <rdfs:label xml:lang="nl">Naar verwezen door</rdfs:label>
+        <owl:inverseOf rdf:resource="&dcterms;references"/>
+    </rdf:Description>
+    <rdf:Description rdf:about="http://purl.org/dc/terms/isPartOf">
+        <rdfs:label xml:lang="nl">Onderdeel van</rdfs:label>
+        <owl:inverseOf rdf:resource="&dcterms;hasPart"/>
+    </rdf:Description>
+    <rdf:Description rdf:about="http://purl.org/dc/terms/hasPart">
+        <rdfs:label xml:lang="nl">Bevat deel</rdfs:label>
+        <owl:inverseOf rdf:resource="&dcterms;isPartOf"/>
+    </rdf:Description>
+    <rdf:Description rdf:about="http://purl.org/dc/terms/isFormatOf">
+        <rdfs:label xml:lang="nl">Formaat van</rdfs:label>
+        <owl:inverseOf rdf:resource="&dcterms;hasFormat"/>
+    </rdf:Description>
+    <rdf:Description rdf:about="http://purl.org/dc/terms/hasFormat">
+        <rdfs:label xml:lang="nl">Heeft formaat</rdfs:label>
+        <owl:inverseOf rdf:resource="&dcterms;isFormatOf"/>
+    </rdf:Description>
+     <rdf:Description rdf:about="http://purl.org/dc/terms/language">
+        <rdfs:label xml:lang="nl">Taal</rdfs:label>
+    </rdf:Description>
+     <rdf:Description rdf:about="http://purl.org/dc/terms/formaat">
+        <rdfs:label xml:lang="nl">Formaat</rdfs:label>
+    </rdf:Description>
+     <rdf:Description rdf:about="http://purl.org/dc/terms/accessRights">
+        <rdfs:label xml:lang="nl">Toegangsrechten</rdfs:label>
+    </rdf:Description>
+     <rdf:Description rdf:about="http://purl.org/dc/terms/rightsHolder">
+        <rdfs:label xml:lang="nl">Rechthebbende</rdfs:label>
+    </rdf:Description>
+
+    <rdf:Description rdf:about="http://www.w3.org/2004/02/skos/core#note">
+        <rdfs:label xml:lang="nl">Annotatie</rdfs:label>
+    </rdf:Description>
+    <rdf:Description rdf:about="http://www.w3.org/2004/02/skos/core#prefLabel">
+        <rdfs:label xml:lang="nl">Label</rdfs:label>
+    </rdf:Description>
+    <rdf:Description rdf:about="http://www.w3.org/2004/02/skos/core#altLabel">
+        <rdfs:label xml:lang="nl">Alternatief label</rdfs:label>
+    </rdf:Description>
+
+     <rdf:Description rdf:about="http://xmlns.com/foaf/0.1/name">
+        <rdfs:label xml:lang="nl">Naam</rdfs:label>
+    </rdf:Description>
+
+     <rdf:Description rdf:about="http://www.w3.org/2006/vcard/ns#locality">
+        <rdfs:label xml:lang="nl">Plaats</rdfs:label>
+    </rdf:Description>
+     <rdf:Description rdf:about="http://www.w3.org/2006/vcard/ns#street-address">
+        <rdfs:label xml:lang="nl">Straat</rdfs:label>
+    </rdf:Description>
+     <rdf:Description rdf:about="http://www.w3.org/2006/vcard/ns#tel">
+        <rdfs:label xml:lang="nl">Telefoon</rdfs:label>
+    </rdf:Description>
+     <rdf:Description rdf:about="http://www.w3.org/2006/vcard/ns#postal-code">
+        <rdfs:label xml:lang="nl">Postcode</rdfs:label>
+    </rdf:Description>
+
+    <rdf:Description rdf:about="http://purl.org/ontology/bibo/isbn">
+        <rdfs:label xml:lang="nl">ISBN</rdfs:label>
+    </rdf:Description>
+    <rdf:Description rdf:about="http://purl.org/ontology/bibo/edition">
+        <rdfs:label xml:lang="nl">Editie</rdfs:label>
+    </rdf:Description>
+
+    <rdf:Description rdf:about="http://purl.org/NET/c4dm/event.owl#time">
+        <rdfs:label xml:lang="nl">Tijd</rdfs:label>
+    </rdf:Description>
+
+    <rdf:Description rdf:about="http://www.w3.org/2006/time#hasBeginning">
+        <rdfs:label xml:lang="nl">Begint</rdfs:label>
+    </rdf:Description>
+    <rdf:Description rdf:about="http://www.w3.org/2006/time#hasEnd">
+        <rdfs:label xml:lang="nl">Eindigt</rdfs:label>
+    </rdf:Description>
+    <rdf:Description rdf:about="http://www.w3.org/2006/time#Inverval">
+        <rdfs:label xml:lang="nl">Interval</rdfs:label>
+    </rdf:Description>
+    <rdf:Description rdf:about="http://www.w3.org/2006/time#Instance">
+        <rdfs:label xml:lang="nl">Tijdstip</rdfs:label>
+    </rdf:Description>
+
+    <rdf:Description rdf:about="http://purl.org/NET/c4dm/timeline.owl#atDateTime">
+        <rdfs:label xml:lang="nl">Op</rdfs:label>
+    </rdf:Description>
+    <rdf:Description rdf:about="http://purl.org/NET/c4dm/timeline.owl#atDate">
+        <rdfs:label xml:lang="nl">Op</rdfs:label>
+    </rdf:Description>
+
+    <rdf:Description rdf:about="http://data.bibliotheek.nl/nbc/ebook/preview">
+        <rdfs:label xml:lang="nl">Preview</rdfs:label>
+    </rdf:Description>
+    <rdf:Description rdf:about="http://data.bibliotheek.nl/ns/nbc#pegi">
+        <rdfs:label xml:lang="nl">PEGI</rdfs:label>
+    </rdf:Description>
+    <rdf:Description rdf:about="http://data.bibliotheek.nl/ns/nbc#kijkwijzer">
+        <rdfs:label xml:lang="nl">Kijkwijzer</rdfs:label>
+    </rdf:Description>
+    <rdf:Description rdf:about="http://bibframe.org/vocab/partNumber">
+        <rdfs:label xml:lang="nl">Deel</rdfs:label>
+    </rdf:Description>
+</rdf:RDF>

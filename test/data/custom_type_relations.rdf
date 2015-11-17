@@ -1,0 +1,34 @@
+<?xml version="1.0"?>
+<!DOCTYPE rdf:RDF [
+    <!ENTITY bibo "http://purl.org/ontology/bibo/" >
+    <!ENTITY owl "http://www.w3.org/2002/07/owl#" >
+    <!ENTITY dbpo "http://dbpedia.org/ontology/" >
+    <!ENTITY dbpr "http://dbpedia.org/resource/" >
+    <!ENTITY mo "http://purl.org/ontology/mo/" >
+]>
+<rdf:RDF
+    xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+    xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#"
+    xmlns:dcterms="http://purl.org/dc/terms/">
+
+    <rdf:Description rdf:about="&bibo;MultiVolumeBook">
+        <rdfs:subClassOf rdf:resource="&dbpo;Book"/>
+    </rdf:Description>
+
+   <rdf:Description rdf:about="&dbpo;Newspaper">
+       <rdfs:subClassOf rdf:resource="&dbpo;Organisation"/>
+   </rdf:Description>
+
+   <rdf:Description rdf:about="&dbpo;Film">
+       <rdfs:subClassOf rdf:resource="&dbpr;Video"/>
+   </rdf:Description>
+
+   <rdf:Description rdf:about="&dbpo;Album">
+       <rdfs:subClassOf rdf:resource="&dbpr;Sound"/>
+   </rdf:Description>
+
+   <rdf:Description rdf:about="&mo;Track">
+       <rdfs:subClassOf rdf:resource="&dbpo;MusicalWork"/>
+       <rdfs:subClassOf rdf:resource="&dbpr;Sound"/>
+   </rdf:Description>
+</rdf:RDF>

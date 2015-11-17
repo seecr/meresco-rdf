@@ -1,11 +1,9 @@
-# -*- coding: utf-8 -*-
 ## begin license ##
 #
 # Meresco RDF contains components to handle RDF data.
 #
 # Copyright (C) 2015 Drents Archief http://www.drentsarchief.nl
 # Copyright (C) 2015 Seecr (Seek You Too B.V.) http://seecr.nl
-# Copyright (C) 2015 Stichting Kennisnet http://www.kennisnet.nl
 #
 # This file is part of "Meresco RDF"
 #
@@ -25,26 +23,13 @@
 #
 ## end license ##
 
-from os import getuid
-assert getuid() != 0, "Do not run tests as 'root'"
+from meresco.xml.namespaces import curieToUri
 
-from seecrdeps import includeParentAndDeps       #DO_NOT_DISTRIBUTE
-includeParentAndDeps(__file__)                   #DO_NOT_DISTRIBUTE
+FOAF_NAME = curieToUri('foaf:name')
+RDFS_LABEL = curieToUri('rdfs:label')
+SKOS_PREFLABEL = curieToUri('skos:prefLabel')
+DCTERMS_TITLE = curieToUri('dcterms:title')
+SKOS_ALTLABEL = curieToUri('skos:altLabel')
 
-import unittest
-from warnings import simplefilter
-simplefilter('default')
-
-from annotationtofieldslisttest import AnnotationToFieldsListTest
-from literaltest import LiteralTest
-from uritest import UriTest
-from bnodetest import BNodeTest
-from pleintest import PleinTest
-
-from graph.graphcomponenttest import GraphComponentTest
-from graph.graphtest import GraphTest
-from graph.rdfparsertest import RdfParserTest
-from graph.triples2rdfxmltest import Triples2RdfXmlTest
-
-if __name__ == '__main__':
-    unittest.main()
+PRIMARY_LABEL_PREDICATES = [FOAF_NAME, RDFS_LABEL, SKOS_PREFLABEL, DCTERMS_TITLE]
+LABEL_PREDICATES = PRIMARY_LABEL_PREDICATES + [SKOS_ALTLABEL]
