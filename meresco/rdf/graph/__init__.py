@@ -24,6 +24,7 @@
 #
 ## end license ##
 
+from ._utils import unique
 from .abstract import isGraphElement
 from .uri import Uri, matchesIriSyntax
 from .bnode import BNode
