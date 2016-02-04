@@ -2,7 +2,7 @@
 #
 # Meresco RDF contains components to handle RDF data.
 #
-# Copyright (C) 2014-2015 Seecr (Seek You Too B.V.) http://seecr.nl
+# Copyright (C) 2014-2016 Seecr (Seek You Too B.V.) http://seecr.nl
 # Copyright (C) 2014 Stichting Bibliotheek.nl (BNL) http://www.bibliotheek.nl
 # Copyright (C) 2015 Drents Archief http://www.drentsarchief.nl
 # Copyright (C) 2015 Koninklijke Bibliotheek (KB) http://www.kb.nl
@@ -49,6 +49,10 @@ class Graph(object):
             for p in [None, predicate]:
                 for o in [None, object]:
                     self._tripleDict[(s, p, o)].add(t)
+
+    def addTriples(self, iterable):
+        for s, p, o in iterable:
+            self.addTriple(s, p, o)
 
     def removeTriple(self, subject, predicate, object):
         subject, predicate = unicodeOrNone(subject), unicodeOrNone(predicate)

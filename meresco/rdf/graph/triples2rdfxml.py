@@ -78,9 +78,10 @@ class _Triples2RdfXml(object):
             if not s.startswith('_:'):
                 uriDescriptions[s].append((p, o))
         while uriDescriptions:
-            s, relations = uriDescriptions.popitem()
-            tag = self._tagForRelations(s, relations)
-            description = self.createSubElement(rdfElement, tag, attrib={'rdf:about': s})
+            sWithMostRelations = [s for s, _ in sorted(uriDescriptions.items(), key=lambda (s, relations):-len(relations))][0]
+            relations = uriDescriptions.pop(sWithMostRelations)
+            tag = self._tagForRelations(sWithMostRelations, relations)
+            description = self.createSubElement(rdfElement, tag, attrib={'rdf:about': sWithMostRelations})
             self.serializeDescription(description, relations, uriDescriptions)
         cleanup_namespaces(rdfElement)
         return rdfElement
