@@ -2,7 +2,7 @@
 #
 # Meresco RDF contains components to handle RDF data.
 #
-# Copyright (C) 2014-2015 Seecr (Seek You Too B.V.) http://seecr.nl
+# Copyright (C) 2014-2016 Seecr (Seek You Too B.V.) http://seecr.nl
 # Copyright (C) 2014 Stichting Bibliotheek.nl (BNL) http://www.bibliotheek.nl
 # Copyright (C) 2015 Drents Archief http://www.drentsarchief.nl
 # Copyright (C) 2015 Koninklijke Bibliotheek (KB) http://www.kb.nl
@@ -31,34 +31,45 @@ from collections import defaultdict
 from lxml.etree import cleanup_namespaces
 
 from meresco.core import Transparent
+from meresco.rdf.graph import Uri
 from meresco.xml.utils import createElement as _createElement, createSubElement as _createSubElement
 
-from meresco.xml.namespaces import namespaces as defaultNamespaces
+from meresco.xml.namespaces import namespaces as defaultNamespaces, curieToUri
 from .graph import Graph
 
 
 class Triples2RdfXml(Transparent):
-    """Transparent to allow for passing on delete message"""
-    def add(self, graph, **kwargs):
-        yield self.all.add(lxmlNode=self.asRdfXml(graph), **kwargs)
+    def __init__(self, namespaces=None, inlineDescriptions=False, knownTypes=None, **kwargs):
+        Transparent.__init__(self, **kwargs)
+        namespaces=namespaces or defaultNamespaces
+        self._Triples2RdfXml = partial(_Triples2RdfXml,
+            namespaces=namespaces,
+            createElement=partial(_createElement, namespaces=namespaces),
+            createSubElement=partial(_createSubElement, namespaces=namespaces),
+            inlineDescriptions=inlineDescriptions,
+            knownTypes=dict((namespaces.curieToUri(t), t) for t in (knownTypes or ['oa:Annotation'])),
+        )
 
-    @classmethod
-    def asRdfXml(cls, triplesOrGraph, namespaces=None):
+    def add(self, **kwargs):
+        if 'graph' in kwargs:
+            kwargs['lxmlNode'] = self.asRdfXml(kwargs.pop('graph'))
+        yield self.all.add(**kwargs)
+
+    def asRdfXml(self, triplesOrGraph):
         graph = triplesOrGraph
         if not hasattr(triplesOrGraph, 'triples'):
             graph = Graph()
             for s, p, o in triplesOrGraph:
                 graph.addTriple(s, p, o)
-        triples2RdfXml = Triples2RdfXml_(graph=graph, namespaces=namespaces)
+        triples2RdfXml = self._Triples2RdfXml(graph=graph)
         return triples2RdfXml.asRdfXml()
 
 
-class Triples2RdfXml_(object):
-    def __init__(self, graph, namespaces=None):
+class _Triples2RdfXml(object):
+    def __init__(self, graph, **kwargs):
         self.graph = graph
-        self.namespaces = namespaces or defaultNamespaces
-        self.createElement = partial(_createElement, namespaces=self.namespaces)
-        self.createSubElement = partial(_createSubElement, namespaces=self.namespaces)
+        for k,v in kwargs.items():
+            setattr(self, k, v)
 
     def asRdfXml(self):
         rdfElement = self.createElement('rdf:RDF', nsmap=self.namespaces)
@@ -66,28 +77,52 @@ class Triples2RdfXml_(object):
         for (s, p, o) in self.graph.triples():
             if not s.startswith('_:'):
                 uriDescriptions[s].append((p, o))
-        for s, relations in sorted(uriDescriptions.iteritems()):
-            description = self.createSubElement(rdfElement, 'rdf:Description', attrib={'rdf:about': s})
-            self.serializeDescription(description, relations)
+        while uriDescriptions:
+            s, relations = uriDescriptions.popitem()
+            tag = self._tagForRelations(s, relations)
+            description = self.createSubElement(rdfElement, tag, attrib={'rdf:about': s})
+            self.serializeDescription(description, relations, uriDescriptions)
         cleanup_namespaces(rdfElement)
         return rdfElement
 
-    def serializeDescription(self, descriptionNode, relations):
+    def serializeDescription(self, descriptionNode, relations, uriDescriptions):
         for (p, o) in sorted(relations):
             text = None
             attrib = {}
+            relations = []
+            if o.isUri() or o.isBNode():
+                for (_, p1, o1) in self.graph.triples(subject=o.value):
+                    relations.append((p1, o1))
             if o.isLiteral():
                 if o.lang:
                     attrib = {'xml:lang': o.lang}
                 text = o.value
-            elif o.isUri():
+            elif o.isUri() and (not self.inlineDescriptions or not relations):
                 attrib={'rdf:resource': o.value}
 
             predicate = self.createSubElement(descriptionNode, self.namespaces.uriToCurie(p), attrib=attrib, text=text)
 
-            if o.isBNode():
-                bnodeRelations = []
-                for (s, p, o) in self.graph.triples(subject=o.value):
-                    bnodeRelations.append((p, o))
-                bnodeDescription = self.createSubElement(predicate, 'rdf:Description')
-                self.serializeDescription(bnodeDescription, bnodeRelations)
+            if not relations:
+                continue
+
+            if o.isBNode() or self.inlineDescriptions:
+                attrib = {}
+                if o.isUri():
+                    attrib={'rdf:about': o.value}
+                    uriDescriptions.pop(o.value, None)
+
+                bnodeDescription = self.createSubElement(predicate, 'rdf:Description', attrib=attrib)
+                self.serializeDescription(bnodeDescription, relations, uriDescriptions)
+
+    def _tagForRelations(self, uri, relations):
+        rdfTypes = self.graph.objects(subject=uri, predicate=RDF_TYPE)
+        if rdfTypes:
+            rdfType = rdfTypes[0]
+            typeTag = self.knownTypes.get(rdfType.value)
+            if typeTag:
+                relations.remove((RDF_TYPE, rdfType))
+                return typeTag
+        return 'rdf:Description'
+
+RDF_TYPE = curieToUri('rdf:type')
+

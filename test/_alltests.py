@@ -4,7 +4,7 @@
 # Meresco RDF contains components to handle RDF data.
 #
 # Copyright (C) 2015 Drents Archief http://www.drentsarchief.nl
-# Copyright (C) 2015 Seecr (Seek You Too B.V.) http://seecr.nl
+# Copyright (C) 2015-2016 Seecr (Seek You Too B.V.) http://seecr.nl
 # Copyright (C) 2015 Stichting Kennisnet http://www.kennisnet.nl
 #
 # This file is part of "Meresco RDF"
@@ -28,6 +28,8 @@
 from os import getuid
 assert getuid() != 0, "Do not run tests as 'root'"
 
+from os import system                            #DO_NOT_DISTRIBUTE
+system('find .. -name "*.pyc" | xargs rm -f')    #DO_NOT_DISTRIBUTE
 from seecrdeps import includeParentAndDeps       #DO_NOT_DISTRIBUTE
 includeParentAndDeps(__file__)                   #DO_NOT_DISTRIBUTE
 
