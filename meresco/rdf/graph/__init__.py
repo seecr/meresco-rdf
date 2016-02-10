@@ -2,7 +2,7 @@
 #
 # Meresco RDF contains components to handle RDF data.
 #
-# Copyright (C) 2014-2015 Seecr (Seek You Too B.V.) http://seecr.nl
+# Copyright (C) 2014-2016 Seecr (Seek You Too B.V.) http://seecr.nl
 # Copyright (C) 2014 Stichting Bibliotheek.nl (BNL) http://www.bibliotheek.nl
 # Copyright (C) 2015 Drents Archief http://www.drentsarchief.nl
 #
@@ -33,3 +33,4 @@ from .graph import Graph
 from .graphcomponent import GraphComponent
 from .rdfparser import RDFParser
 from .triples2rdfxml import Triples2RdfXml
+from ._uris import LABEL_PREDICATES, PRIMARY_LABEL_PREDICATES
