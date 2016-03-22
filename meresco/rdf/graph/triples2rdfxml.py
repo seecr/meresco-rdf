@@ -112,7 +112,8 @@ class _Triples2RdfXml(object):
                     attrib={'rdf:about': o.value}
                     uriDescriptions.pop(o.value, None)
 
-                bnodeDescription = self.createSubElement(predicate, 'rdf:Description', attrib=attrib)
+                tag = self._tagForRelations(o, relations)
+                bnodeDescription = self.createSubElement(predicate, tag, attrib=attrib)
                 self.serializeDescription(bnodeDescription, relations, uriDescriptions)
 
     def _tagForRelations(self, uri, relations):

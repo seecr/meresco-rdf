@@ -197,6 +197,21 @@ class Triples2RdfXmlTest(SeecrTestCase):
     </rdf:Description>
 </rdf:RDF>''' % namespaces, Triples2RdfXml().asRdfXml(graph))
 
+    def testAnonymousBNodeWithKnownType(self):
+        graph = Graph()
+        graph.addTriple('http://example.org/item', curieToUri('dcterms:creator'), BNode('_:1'))
+        graph.addTriple('_:1', curieToUri('rdfs:label'), Literal('The Creator', lang='en'))
+        graph.addTriple('_:1', curieToUri('rdf:type'), Uri(curieToUri('foaf:Person')))
+        self.assertXmlEquals('''<rdf:RDF %(xmlns_rdf)s %(xmlns_rdfs)s %(xmlns_dcterms)s %(xmlns_foaf)s>
+    <rdf:Description rdf:about="http://example.org/item">
+        <dcterms:creator>
+            <foaf:Person>
+                <rdfs:label xml:lang="en">The Creator</rdfs:label>
+            </foaf:Person>
+        </dcterms:creator>
+    </rdf:Description>
+</rdf:RDF>''' % namespaces, Triples2RdfXml(knownTypes=['foaf:Person']).asRdfXml(graph))
+
     @skip('not yet')
     def testIdentifiedBNode(self):
         self.fail()
