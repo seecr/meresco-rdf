@@ -2,7 +2,7 @@
 #
 # Meresco RDF contains components to handle RDF data.
 #
-# Copyright (C) 2012-2015 Seecr (Seek You Too B.V.) http://seecr.nl
+# Copyright (C) 2012-2016 Seecr (Seek You Too B.V.) http://seecr.nl
 # Copyright (C) 2012-2014 Stichting Bibliotheek.nl (BNL) http://www.bibliotheek.nl
 # Copyright (C) 2015 Koninklijke Bibliotheek (KB) http://www.kb.nl
 #
@@ -72,13 +72,18 @@ class Plein(Observable):
 
     def _extractFragments(self, lxmlNode):
         fragments = {}
-        for descriptionNode in xpath(lxmlNode, "*[@rdf:about]"):
-            descriptionNode = self._normalizeRdfDescription(descriptionNode)
-            uri = str(descriptionNode.attrib[curieToTag("rdf:about")])
-            description = lxmltostringUtf8(descriptionNode)
-            fragment = _Fragment(uri, description)
+        for (fragmentNode, uri) in self._findFragmentNodesWithAboutUris(lxmlNode):
+            fragment = _Fragment(uri, lxmltostringUtf8(self._normalizeRdfDescription(fragmentNode)))
             fragments[fragment.hash] = fragment
         return fragments
+
+    def _findFragmentNodesWithAboutUris(self, lxmlNode):
+        for descriptionNode in xpath(lxmlNode, "*[@rdf:about]"):
+            uri = str(descriptionNode.attrib[curieToTag("rdf:about")])
+            yield descriptionNode, uri
+        for statementNode in xpath(lxmlNode, "rdf:Statement"):
+            uri = str(xpathFirst(statementNode, 'rdf:subject/@rdf:resource'))
+            yield statementNode, uri
 
     def _normalizeRdfDescription(self, descriptionNode):
         descriptionNode = XML(lxmltostringUtf8(descriptionNode).strip())
@@ -253,4 +258,4 @@ def lxmltostringUtf8(lxmlNode, **kwargs):
 
 
 RDF_TEMPLATE = '<rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">%s</rdf:RDF>'
-CANONICAL_DESCRIPTION_TAGS = set(namespaces.curieToTag(tag) for tag in ['rdf:Description', 'oa:Annotation'])
+CANONICAL_DESCRIPTION_TAGS = set(namespaces.curieToTag(tag) for tag in ['rdf:Description', 'oa:Annotation', 'rdf:Statement'])

@@ -510,6 +510,21 @@ class PleinTest(SeecrTestCase):
         self.assertFalse('<skos:prefLabel xml:lang="nl">Eerste</skos:prefLabel>' in data, data)
         self.assertTrue('<skos:prefLabel xml:lang="nl">Tweede</skos:prefLabel>' in data, data)
 
+    def testReificationStatementGoesWithSubjectUri(self):
+        lxmlNode = parse(StringIO("""<rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:dcterms="http://purl.org/dc/terms/">
+    <skos:Concept rdf:about="http://example.com/first/uri" xmlns:skos="http://www.w3.org/2004/02/skos/core#">
+         <skos:prefLabel xml:lang="nl">Eerste</skos:prefLabel>
+    </skos:Concept>
+    <rdf:Statement>
+        <rdf:subject rdf:resource="http://example.com/first/uri"/>
+    </rdf:Statement>
+</rdf:RDF>"""))
+        consume(self.dna.all.add(identifier='original:uno', partname="ignored", lxmlNode=lxmlNode))
+        record = self.oaiJazz.getRecord("http://example.com/first/uri")
+        self.assertEquals("http://example.com/first/uri", record.identifier)
+        data = self.storage.getData(identifier=record.identifier, name='rdf')
+        self.assertTrue('<rdf:subject rdf:resource="http://example.com/first/uri"/>' in data, data)
+
     def testCommit(self):
         self.plein.commit()  # No way to assert anything other than that the method exists.
 
