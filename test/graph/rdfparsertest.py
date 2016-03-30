@@ -37,6 +37,7 @@ from lxml.etree import XML, parse
 from meresco.rdf.graph.rdfparser import RDFParser, getText
 from meresco.rdf.graph import Uri, Literal, BNode, Graph
 
+
 mydir = dirname(abspath(__file__))
 testDatadir = join(dirname(mydir), 'data')
 
@@ -184,8 +185,7 @@ class RdfParserTest(SeecrTestCase):
 
     def testShouldRecognizeParseTypeResource(self):
         BNode.nextGenId = 0
-        RDFParser(sink=self.sink).parse(XML("""<rdf:RDF %(xmlns_rdf)s %(xmlns_rdfs)s %(xmlns_dcterms)s
-               xmlns:exterms="http://www.example.com/terms/">
+        RDFParser(sink=self.sink).parse(XML("""<rdf:RDF %(xmlns_rdf)s %(xmlns_rdfs)s %(xmlns_dcterms)s>
     <rdf:Description rdf:about="http://example.com/something">
         <dcterms:hasFormat rdf:parseType="Resource">
             <dcterms:title>Title</dcterms:title>
@@ -198,6 +198,26 @@ class RdfParserTest(SeecrTestCase):
             ('_:id0', curieToUri('dcterms:format'), Literal('application/epub')),
             ('_:id0', curieToUri('dcterms:title'), Literal('Title')),
         ]), set(self.sink.triples()))
+
+    def testRecognizedRdfIDForReification(self):
+        BNode.nextGenId = 0
+        RDFParser(sink=self.sink).parse(XML("""<rdf:RDF %(xmlns_rdf)s %(xmlns_rdfs)s %(xmlns_dcterms)s>
+    <rdf:Description rdf:about="http://example.com/something">
+        <dcterms:title rdf:ID="triple2">Title</dcterms:title>
+    </rdf:Description>
+    <rdf:Statement rdf:about="#triple2">
+        <dcterms:source>source</dcterms:source>
+    </rdf:Statement>
+</rdf:RDF>""" % namespaces))
+        self.assertEquals(set([
+            ("http://example.com/something", curieToUri('dcterms:title'), Literal("Title")),
+            (u'#triple2', u'http://www.w3.org/1999/02/22-rdf-syntax-ns#predicate', Uri(u'http://purl.org/dc/terms/title')),
+            (u'#triple2', u'http://www.w3.org/1999/02/22-rdf-syntax-ns#object', Literal(u'Title')),
+            (u'#triple2', u'http://www.w3.org/1999/02/22-rdf-syntax-ns#type', Uri(u'http://www.w3.org/1999/02/22-rdf-syntax-ns#Statement')),
+            (u'#triple2', u'http://purl.org/dc/terms/source', Literal(u'source')),
+            (u'#triple2', u'http://www.w3.org/1999/02/22-rdf-syntax-ns#subject', Uri(u'http://example.com/something'))
+        ]), set(self.sink.triples()))
+
 
 uri = "urn:GGC:oclc-ggc:780950577"
 

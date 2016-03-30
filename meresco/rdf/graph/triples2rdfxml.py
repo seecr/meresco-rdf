@@ -31,9 +31,7 @@ from collections import defaultdict
 from lxml.etree import cleanup_namespaces
 
 from meresco.core import Transparent
-from meresco.rdf.graph import Uri
 from meresco.xml.utils import createElement as _createElement, createSubElement as _createSubElement
-
 from meresco.xml.namespaces import namespaces as defaultNamespaces, curieToUri
 from .graph import Graph
 
@@ -127,4 +125,3 @@ class _Triples2RdfXml(object):
         return 'rdf:Description'
 
 RDF_TYPE = curieToUri('rdf:type')
-

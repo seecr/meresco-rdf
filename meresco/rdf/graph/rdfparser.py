@@ -2,7 +2,7 @@
 #
 # Meresco RDF contains components to handle RDF data.
 #
-# Copyright (C) 2014-2015 Seecr (Seek You Too B.V.) http://seecr.nl
+# Copyright (C) 2014-2016 Seecr (Seek You Too B.V.) http://seecr.nl
 # Copyright (C) 2014 Stichting Bibliotheek.nl (BNL) http://www.bibliotheek.nl
 # Copyright (C) 2015 Drents Archief http://www.drentsarchief.nl
 # Copyright (C) 2015 Koninklijke Bibliotheek (KB) http://www.kb.nl
@@ -30,7 +30,7 @@ from urlparse import urljoin as urijoin
 
 from lxml.etree import Element
 
-from meresco.xml import namespaces
+from meresco.xml.namespaces import curieToTag, curieToUri
 
 from .uri import Uri
 from .bnode import BNode
@@ -45,11 +45,10 @@ class RDFParser(object):
 Particularly the following RDF/XML constructs are not supported:
 - rdf:datatype (!)
 - rdf:parseType "Literal" and "Collection"
-- rdf:li
+- rdf:li (generated node ids)
 - rdf:bagID
 - rdf:aboutEach
 - rdf:aboutEachPrefix
-- reification (hence rdf:ID is only recognized as abbreviated URI)
 - implicit base
 
 Input is not validated in any way.
@@ -126,42 +125,56 @@ How incorrect RDF/XML (or input with unsupported constructs) is parsed into a gr
 
     def emptyPropertyElt(self, subj, e):
         uri = self.uriForTag(e.tag)
-        if e.attrib.keys() in ([], [rdf_ID_tag]):
+        if sum(1 for k in e.attrib.keys() if not k == rdf_ID_tag) == 0:
             obj = Literal(e.text or '', lang=e.attrib.get(x_lang_tag))
-            self.addTriple(subj, uri, obj)
         else:
-            if rdf_resource_tag in e.attrib:
-                r = Uri(urijoin(e.base, e.attrib[rdf_resource_tag]))
+            resource = e.attrib.get(rdf_resource_tag)
+            if not resource is None:
+                obj = Uri(urijoin(e.base, resource))
             else:
-                nodeID = None
-                if rdf_nodeID_tag in e.attrib:
-                    nodeID = e.attrib[rdf_nodeID_tag]
-                r = self.bNode(nodeID=nodeID)
-
+                obj = self.bNode(nodeID=e.attrib.get(rdf_nodeID_tag))
             for attrib, value in filter(lambda (k, v): k not in DISALLOWED, e.attrib.items()):
                 if attrib != rdf_type_tag:
-                    o = Literal(value, lang=e.attrib.get(x_lang_tag))
-                    self.addTriple(r.value, self.uriForTag(attrib), o)
+                    self.addTriple(obj.value, self.uriForTag(attrib), Literal(value, lang=e.attrib.get(x_lang_tag)))
                 else:
-                    self.addTriple(r.value, rdf_type_uri, Uri(value))
-            self.addTriple(subj, uri, r)
+                    self.addTriple(obj.value, rdf_type_uri, Uri(value))
+        self.addTriple(subj, uri, obj)
+        rdfID = e.attrib.get(rdf_ID_tag)
+        if not rdfID is None:
+            self.reify(subj, uri, obj, e.base, rdfID)
 
     def resourcePropertyElt(self, subj, e, n):
         uri = self.uriForTag(e.tag)
         childSubj = self.nodeElement(n)
         self.addTriple(subj, uri, childSubj)
+        rdfID = e.attrib.get(rdf_ID_tag)
+        if not rdfID is None:
+            self.reify(subj, uri, childSubj, e.base, rdfID)
 
     def literalPropertyElt(self, subj, e, eText):
         uri = self.uriForTag(e.tag)
         o = Literal(eText, lang=e.attrib.get(x_lang_tag))  # TODO: process datatype with e.attrib.get(rdf_datatype_tag
         self.addTriple(subj, uri, o)
+        rdfID = e.attrib.get(rdf_ID_tag)
+        if not rdfID is None:
+            self.reify(subj, uri, o, e.base, rdfID)
 
     def parseTypeResourcePropertyElt(self, subj, e, children):
         uri = self.uriForTag(e.tag)
         node = self.bNode()
         self.addTriple(subj, uri, node)
+        rdfID = e.attrib.get(rdf_ID_tag)
+        if not rdfID is None:
+            self.reify(subj, uri, node, e.base, rdfID)
         for child in children:
             self.propertyElt(node.value, child)
+
+    def reify(self, s, p, o, base, rdfID):
+        r = urijoin(base, '#' + rdfID)
+        self.addTriple(r, rdf_subject_uri, Uri(s))
+        self.addTriple(r, rdf_predicate_uri, Uri(p))
+        self.addTriple(r, rdf_object_uri, o)
+        self.addTriple(r, rdf_type_uri, Uri(rdf_Statement_uri))
 
 
 def getText(node):
@@ -176,21 +189,27 @@ def getText(node):
     return allText or None
 
 
-x_lang_tag = namespaces.curieToTag("xml:lang")
-rdf_RDF_tag = namespaces.curieToTag("rdf:RDF")
-rdf_ID_tag = namespaces.curieToTag("rdf:ID")
-rdf_about_tag = namespaces.curieToTag("rdf:about")
-rdf_aboutEach_tag = namespaces.curieToTag("rdf:aboutEach")
-rdf_aboutEachPrefix_tag = namespaces.curieToTag("rdf:aboutEachPrefix")
-rdf_type_tag = namespaces.curieToTag("rdf:type")
-rdf_resource_tag = namespaces.curieToTag("rdf:resource")
-rdf_Description_tag = namespaces.curieToTag("rdf:Description")
-rdf_bagID_tag = namespaces.curieToTag("rdf:bagID")
-rdf_parseType_tag = namespaces.curieToTag("rdf:parseType")
-rdf_nodeID_tag = namespaces.curieToTag("rdf:nodeID")
-rdf_datatype_tag = namespaces.curieToTag("rdf:datatype")
-rdf_li_tag = namespaces.curieToTag("rdf:li")
-rdf_type_uri = namespaces.curieToUri('rdf:type')
+x_lang_tag = curieToTag("xml:lang")
+rdf_RDF_tag = curieToTag("rdf:RDF")
+rdf_ID_tag = curieToTag("rdf:ID")
+rdf_about_tag = curieToTag("rdf:about")
+rdf_aboutEach_tag = curieToTag("rdf:aboutEach")
+rdf_aboutEachPrefix_tag = curieToTag("rdf:aboutEachPrefix")
+rdf_type_tag = curieToTag("rdf:type")
+rdf_resource_tag = curieToTag("rdf:resource")
+rdf_Description_tag = curieToTag("rdf:Description")
+rdf_bagID_tag = curieToTag("rdf:bagID")
+rdf_parseType_tag = curieToTag("rdf:parseType")
+rdf_nodeID_tag = curieToTag("rdf:nodeID")
+rdf_datatype_tag = curieToTag("rdf:datatype")
+rdf_li_tag = curieToTag("rdf:li")
+
+rdf_Statement_uri = curieToUri('rdf:Statement')
+rdf_type_uri = curieToUri('rdf:type')
+rdf_subject_uri = curieToUri('rdf:subject')
+rdf_predicate_uri = curieToUri('rdf:predicate')
+rdf_object_uri = curieToUri('rdf:object')
+
 
 DISALLOWED = set([rdf_RDF_tag, rdf_ID_tag, rdf_about_tag, rdf_bagID_tag,
     rdf_parseType_tag, rdf_resource_tag, rdf_nodeID_tag, rdf_datatype_tag,
