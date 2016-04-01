@@ -26,14 +26,16 @@
 ## end license ##
 
 from unittest import skip
+
+from lxml.etree import XML
+
 from seecr.test import SeecrTestCase, CallTrace
 
-from meresco.components import lxmltostring
-from meresco.core import Observable
-
-from meresco.rdf.graph import Graph, Triples2RdfXml, Literal, Uri, BNode
-from meresco.xml.namespaces import curieToUri, namespaces
 from weightless.core import consume, be
+from meresco.core import Observable
+from meresco.components import lxmltostring
+from meresco.xml.namespaces import curieToUri, namespaces, xpath, tagToCurie
+from meresco.rdf.graph import Graph, Triples2RdfXml, Literal, Uri, BNode, RDFParser
 
 
 class Triples2RdfXmlTest(SeecrTestCase):
@@ -216,4 +218,42 @@ class Triples2RdfXmlTest(SeecrTestCase):
     def testIdentifiedBNode(self):
         self.fail()
 
+    def testReificationWithRdfID(self):
+        testNamespaces = namespaces.copyUpdate(dict(test="urn:test#"))
+        xpathFirst = testNamespaces.xpathFirst
+        rdfXml = '''<rdf:RDF %(xmlns_rdf)s %(xmlns_test)s>
+            <rdf:Description rdf:about="some:uri">
+                <test:relation rdf:ID="_987">object</test:relation>
+            </rdf:Description>
+            <rdf:Statement rdf:about="#_987">
+                <test:reificationRelation>reification object</test:reificationRelation>
+            </rdf:Statement>
+        </rdf:RDF>''' % testNamespaces
+        graph = RDFParser().parse(XML(rdfXml))
+        result = Triples2RdfXml(namespaces=testNamespaces).asRdfXml(graph)
+        self.assertEquals('object', xpathFirst(result, '/rdf:RDF/rdf:Description[@rdf:about="some:uri"]/test:relation[@rdf:ID="_987"]/text()'))
+        self.assertEquals('reification object', xpathFirst(result, '/rdf:RDF/rdf:Statement[@rdf:about="#_987"]/test:reificationRelation/text()'))
+        self.assertEquals(['rdf:Description', 'rdf:Statement'], [tagToCurie(node.tag) for node in xpath(result, '/rdf:RDF/*')])
 
+    def testTopLevelBNode(self):
+        self.fail()
+
+    def testReificationWithBlankNodeSubject(self):
+        testNamespaces = namespaces.copyUpdate(dict(test="urn:test#"))
+        xpathFirst = testNamespaces.xpathFirst
+        rdfXml = '''<rdf:RDF %(xmlns_rdf)s %(xmlns_test)s>
+            <rdf:Description>
+                <test:relation rdf:ID="_987">object</test:relation>
+            </rdf:Description>
+            <rdf:Statement rdf:about="#_987">
+                <test:reificationRelation>reification object</test:reificationRelation>
+            </rdf:Statement>
+        </rdf:RDF>''' % testNamespaces
+        graph = RDFParser().parse(XML(rdfXml))
+        result = Triples2RdfXml(namespaces=testNamespaces).asRdfXml(graph)
+        # print lxmltostring(result, pretty_print=True)
+        # import sys; sys.stdout.flush()
+        self.assertEquals('reification object', xpathFirst(result, '/rdf:RDF/rdf:Statement[@rdf:about="#_987"]/test:reificationRelation/text()'))
+        self.assertEquals(None, xpathFirst(result, '/rdf:RDF/rdf:Statement[@rdf:about="#_987"]/rdf:subject'))  # rdf:Statement with bnode subject should not actually refer to it...!!
+        self.assertEquals('object', xpathFirst(result, '/rdf:RDF/rdf:Description/test:relation[@rdf:ID="_987"]/text()'))
+        self.assertEquals(['rdf:Description', 'rdf:Statement'], [tagToCurie(node.tag) for node in xpath(result, '/rdf:RDF/*')])

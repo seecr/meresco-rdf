@@ -130,8 +130,13 @@ class Graph(object):
             compose(matchRecursive(patterns=triplePatterns, bindings={})),
             key=lambda d: tuple(sorted(d.items())))
 
+    def __iter__(self):
+        return self._triples()
+
     def _triples(self, subject, predicate, object):
         return list(self._tripleDict.get((subject, predicate, object), []))
+
+
 
 
 def unicodeOrNone(aString):

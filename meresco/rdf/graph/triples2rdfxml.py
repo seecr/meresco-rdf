@@ -33,11 +33,11 @@ from lxml.etree import cleanup_namespaces
 from meresco.core import Transparent
 from meresco.xml.utils import createElement as _createElement, createSubElement as _createSubElement
 from meresco.xml.namespaces import namespaces as defaultNamespaces, curieToUri
-from .graph import Graph
+from .graph import Graph, Uri
 
 
 class Triples2RdfXml(Transparent):
-    def __init__(self, namespaces=None, inlineDescriptions=False, knownTypes=None, **kwargs):
+    def __init__(self, namespaces=None, inlineDescriptions=False, knownTypes=None, relativeTypePositions=None, **kwargs):
         Transparent.__init__(self, **kwargs)
         namespaces=namespaces or defaultNamespaces
         self._Triples2RdfXml = partial(_Triples2RdfXml,
@@ -45,7 +45,8 @@ class Triples2RdfXml(Transparent):
             createElement=partial(_createElement, namespaces=namespaces),
             createSubElement=partial(_createSubElement, namespaces=namespaces),
             inlineDescriptions=inlineDescriptions,
-            knownTypes=dict((namespaces.curieToUri(t), t) for t in (knownTypes or ['oa:Annotation'])),
+            nodePromotedTypes=dict((namespaces.curieToUri(t), t) for t in (NODE_PROMOTED_TYPES.union(knownTypes or []))),
+            relativeTypePositions=dict(RELATIVE_TYPE_POSITIONS, **(relativeTypePositions or {}))
         )
 
     def add(self, **kwargs):
@@ -55,9 +56,12 @@ class Triples2RdfXml(Transparent):
 
     def asRdfXml(self, triplesOrGraph):
         graph = triplesOrGraph
-        if not hasattr(triplesOrGraph, 'triples'):
+        if not hasattr(triplesOrGraph, 'matchTriplePatterns'):
             graph = Graph()
-            for s, p, o in triplesOrGraph:
+            triples = triplesOrGraph
+            if hasattr(triples, 'triples'):
+                triples = triples.triples()
+            for s, p, o in triples:
                 graph.addTriple(s, p, o)
         triples2RdfXml = self._Triples2RdfXml(graph=graph)
         return triples2RdfXml.asRdfXml()
@@ -66,62 +70,97 @@ class Triples2RdfXml(Transparent):
 class _Triples2RdfXml(object):
     def __init__(self, graph, **kwargs):
         self.graph = graph
-        for k,v in kwargs.items():
-            setattr(self, k, v)
+        self.__dict__.update(kwargs)
+        self._relationRdfIds = self._gatherRelationRdfIds()
 
     def asRdfXml(self):
         rdfElement = self.createElement('rdf:RDF', nsmap=self.namespaces)
-        uriDescriptions = defaultdict(list)
+        resourceDescriptions = defaultdict(lambda: {'types': set(), 'relations': []})
         for (s, p, o) in self.graph.triples():
             if not s.startswith('_:'):
-                uriDescriptions[s].append((p, o))
-        while uriDescriptions:
-            sWithMostRelations = [s for s, _ in sorted(uriDescriptions.items(), key=lambda (s, relations):-len(relations))][0]
-            relations = uriDescriptions.pop(sWithMostRelations)
-            tag = self._tagForRelations(sWithMostRelations, relations)
-            description = self.createSubElement(rdfElement, tag, attrib={'rdf:about': sWithMostRelations})
-            self.serializeDescription(description, relations, uriDescriptions)
+                self._gatherRelation(resourceDescriptions[s], p, o)
+
+        sortedSubjects = [s for s, _ in sorted(resourceDescriptions.items(), key=self._subjectUriOrder)]
+        for subject in sortedSubjects:
+            try:
+                resourceDescription = resourceDescriptions.pop(subject)
+            except KeyError:
+                continue
+            tagCurie = self._tagCurieForNode(subject, resourceDescription)
+            descriptionNode = self.createSubElement(rdfElement, tagCurie, attrib={'rdf:about': subject})
+            self.serializeDescription(descriptionNode, subject, resourceDescription, resourceDescriptions)
         cleanup_namespaces(rdfElement)
         return rdfElement
 
-    def serializeDescription(self, descriptionNode, relations, uriDescriptions):
-        for (p, o) in sorted(relations):
+    def _gatherRelationRdfIds(self):
+        relationRdfIds = {}
+        for binding in self.graph.matchTriplePatterns(
+                ('?r', RDF_SUBJECT, '?s'),
+                ('?r', RDF_PREDICATE, '?p'),
+                ('?r', RDF_OBJECT, '?o')):
+            r, key = binding['r'].value, (binding['s'].value, binding['p'].value, binding['o'])
+            if not r.startswith('_:'):
+                relationRdfIds[key] = r.partition("#")[-1]
+        return relationRdfIds
+
+    def serializeDescription(self, descriptionNode, subject, resourceDescription, uriDescriptions):
+        for (p, o) in sorted(resourceDescription['relations']):
             text = None
             attrib = {}
-            relations = []
+            oResourceDescription = {'relations': [], 'types': set()}
+            rdfID = self._relationRdfIds.get((subject, p, o), None)
+            if rdfID:
+                attrib['rdf:ID'] = rdfID
             if o.isUri() or o.isBNode():
                 for (_, p1, o1) in self.graph.triples(subject=o.value):
-                    relations.append((p1, o1))
+                    self._gatherRelation(oResourceDescription, p1, o1)
             if o.isLiteral():
                 if o.lang:
-                    attrib = {'xml:lang': o.lang}
+                    attrib['xml:lang'] = o.lang
                 text = o.value
-            elif o.isUri() and (not self.inlineDescriptions or not relations):
-                attrib={'rdf:resource': o.value}
-
+            elif o.isUri() and (not self.inlineDescriptions or not oResourceDescription['relations']):
+                attrib['rdf:resource'] = o.value
             predicate = self.createSubElement(descriptionNode, self.namespaces.uriToCurie(p), attrib=attrib, text=text)
-
-            if not relations:
+            if not oResourceDescription['relations']:
                 continue
-
             if o.isBNode() or self.inlineDescriptions:
                 attrib = {}
                 if o.isUri():
-                    attrib={'rdf:about': o.value}
+                    attrib['rdf:about'] = o.value
                     uriDescriptions.pop(o.value, None)
-
-                tag = self._tagForRelations(o, relations)
+                tag = self._tagCurieForNode(o, oResourceDescription)
                 bnodeDescription = self.createSubElement(predicate, tag, attrib=attrib)
-                self.serializeDescription(bnodeDescription, relations, uriDescriptions)
+                self.serializeDescription(bnodeDescription, o.value, oResourceDescription, uriDescriptions)
 
-    def _tagForRelations(self, uri, relations):
-        rdfTypes = self.graph.objects(subject=uri, predicate=RDF_TYPE)
-        if rdfTypes:
-            rdfType = rdfTypes[0]
-            typeTag = self.knownTypes.get(rdfType.value)
-            if typeTag:
-                relations.remove((RDF_TYPE, rdfType))
-                return typeTag
+    def _gatherRelation(self, resourceDescription, p, o):
+        resourceDescription['relations'].append((p, o))
+        if p == RDF_TYPE:
+            resourceDescription['types'].add(o.value)
+
+    def _tagCurieForNode(self, uri, resourceDescription):
+        rdfTypes = resourceDescription['types']
+        for rdfType in rdfTypes:
+            typeTagCurie = self.nodePromotedTypes.get(rdfType)
+            if typeTagCurie:
+                resourceDescription['relations'].remove((RDF_TYPE, Uri(rdfType)))
+                return typeTagCurie
         return 'rdf:Description'
 
+    def _subjectUriOrder(self, (s, resourceDescription)):
+        return (
+            min([self.relativeTypePositions.get(type, 0) for type in resourceDescription['types']] or [0]),
+           -len(resourceDescription['relations'])
+        )
+
+
 RDF_TYPE = curieToUri('rdf:type')
+RDF_SUBJECT = curieToUri('rdf:subject')
+RDF_PREDICATE = curieToUri('rdf:predicate')
+RDF_OBJECT = curieToUri('rdf:object')
+
+NODE_PROMOTED_TYPES = set(['rdf:Statement', 'oa:Annotation'])
+
+RELATIVE_TYPE_POSITIONS = {
+    curieToUri('oa:Annotation'): -10,
+    curieToUri('rdf:Statement'): 100,
+}
