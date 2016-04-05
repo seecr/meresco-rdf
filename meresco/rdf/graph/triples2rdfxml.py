@@ -32,8 +32,11 @@ from lxml.etree import cleanup_namespaces
 
 from meresco.core import Transparent
 from meresco.xml.utils import createElement as _createElement, createSubElement as _createSubElement
-from meresco.xml.namespaces import namespaces as defaultNamespaces, curieToUri
-from .graph import Graph, Uri
+from meresco.xml.namespaces import namespaces as defaultNamespaces, curieToUri, curieToTag
+
+from .graph import Graph
+from .uri import Uri
+from .bnode import BNode
 
 
 class Triples2RdfXml(Transparent):
@@ -77,8 +80,10 @@ class _Triples2RdfXml(object):
         rdfElement = self.createElement('rdf:RDF', nsmap=self.namespaces)
         resourceDescriptions = defaultdict(lambda: {'types': set(), 'relations': []})
         for (s, p, o) in self.graph.triples():
-            if not s.startswith('_:'):
-                self._gatherRelation(resourceDescriptions[s], p, o)
+            if s.startswith('_:'):
+                if len(self._leftHandSides(BNode(s))) == 1:
+                    continue
+            self._gatherRelation(resourceDescriptions[s], p, o)
 
         sortedSubjects = [s for s, _ in sorted(resourceDescriptions.items(), key=self._subjectUriOrder)]
         for subject in sortedSubjects:
@@ -87,7 +92,13 @@ class _Triples2RdfXml(object):
             except KeyError:
                 continue
             tagCurie = self._tagCurieForNode(subject, resourceDescription)
-            descriptionNode = self.createSubElement(rdfElement, tagCurie, attrib={'rdf:about': subject})
+            attrib = None
+            if not subject.startswith('_:'):
+                attrib = {'rdf:about': subject}
+            else:
+                if len(self._leftHandSides(BNode(subject))) > 0:
+                    attrib = {'rdf:nodeID': subject.partition('_:')[-1]}
+            descriptionNode = self.createSubElement(rdfElement, tagCurie, attrib=attrib)
             self.serializeDescription(descriptionNode, subject, resourceDescription, resourceDescriptions)
         cleanup_namespaces(rdfElement)
         return rdfElement
@@ -105,32 +116,40 @@ class _Triples2RdfXml(object):
 
     def serializeDescription(self, descriptionNode, subject, resourceDescription, uriDescriptions):
         for (p, o) in sorted(resourceDescription['relations']):
+            if descriptionNode.tag == RDF_STATEMENT_TAG:
+                if descriptionNode.attrib.get(RDF_ABOUT_TAG) and p in REIFICATION_RELATIONS:
+                    continue
             text = None
             attrib = {}
             oResourceDescription = {'relations': [], 'types': set()}
             rdfID = self._relationRdfIds.get((subject, p, o), None)
             if rdfID:
                 attrib['rdf:ID'] = rdfID
-            if o.isUri() or o.isBNode():
+            if o.isIdentifier():
                 for (_, p1, o1) in self.graph.triples(subject=o.value):
                     self._gatherRelation(oResourceDescription, p1, o1)
-            if o.isLiteral():
+                if o.isUri() and (not self.inlineDescriptions or not oResourceDescription['relations']):
+                    attrib['rdf:resource'] = o.value
+                elif o.isBNode() and len(self._leftHandSides(o)) > 1:
+                    attrib['rdf:nodeID'] = o.value.partition('_:')[-1]
+            elif o.isLiteral():
                 if o.lang:
                     attrib['xml:lang'] = o.lang
                 text = o.value
-            elif o.isUri() and (not self.inlineDescriptions or not oResourceDescription['relations']):
-                attrib['rdf:resource'] = o.value
-            predicate = self.createSubElement(descriptionNode, self.namespaces.uriToCurie(p), attrib=attrib, text=text)
-            if not oResourceDescription['relations']:
+            predicateNode = self.createSubElement(descriptionNode, self.namespaces.uriToCurie(p), attrib=attrib, text=text)
+            if 'rdf:nodeID' in attrib or not oResourceDescription['relations']:
                 continue
             if o.isBNode() or self.inlineDescriptions:
                 attrib = {}
                 if o.isUri():
                     attrib['rdf:about'] = o.value
-                    uriDescriptions.pop(o.value, None)
                 tag = self._tagCurieForNode(o, oResourceDescription)
-                bnodeDescription = self.createSubElement(predicate, tag, attrib=attrib)
-                self.serializeDescription(bnodeDescription, o.value, oResourceDescription, uriDescriptions)
+                nodeElement = self.createSubElement(predicateNode, tag, attrib=attrib)
+                uriDescriptions.pop(o.value, None)
+                self.serializeDescription(nodeElement, o.value, oResourceDescription, uriDescriptions)
+
+    def _leftHandSides(self, o):
+        return set(s for s, lhsP, _ in self.graph.triples(object=o) if lhsP != RDF_SUBJECT)
 
     def _gatherRelation(self, resourceDescription, p, o):
         resourceDescription['relations'].append((p, o))
@@ -149,14 +168,19 @@ class _Triples2RdfXml(object):
     def _subjectUriOrder(self, (s, resourceDescription)):
         return (
             min([self.relativeTypePositions.get(type, 0) for type in resourceDescription['types']] or [0]),
-           -len(resourceDescription['relations'])
+            len(self._leftHandSides(BNode(s) if s.startswith('_:') else Uri(s))),
+            -len(resourceDescription['relations'])
         )
 
+
+RDF_STATEMENT_TAG = curieToTag('rdf:Statement')
+RDF_ABOUT_TAG = curieToTag('rdf:about')
 
 RDF_TYPE = curieToUri('rdf:type')
 RDF_SUBJECT = curieToUri('rdf:subject')
 RDF_PREDICATE = curieToUri('rdf:predicate')
 RDF_OBJECT = curieToUri('rdf:object')
+REIFICATION_RELATIONS = set([RDF_SUBJECT, RDF_PREDICATE, RDF_OBJECT])
 
 NODE_PROMOTED_TYPES = set(['rdf:Statement', 'oa:Annotation'])
 

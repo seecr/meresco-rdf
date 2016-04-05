@@ -25,8 +25,6 @@
 #
 ## end license ##
 
-from unittest import skip
-
 from lxml.etree import XML
 
 from seecr.test import SeecrTestCase, CallTrace
@@ -214,9 +212,22 @@ class Triples2RdfXmlTest(SeecrTestCase):
     </rdf:Description>
 </rdf:RDF>''' % namespaces, Triples2RdfXml(knownTypes=['foaf:Person']).asRdfXml(graph))
 
-    @skip('not yet')
     def testIdentifiedBNode(self):
-        self.fail()
+        # introducing rdf:nodeID references becomes necessary when two or more incoming relationships refer to same blank node
+        rdfXml = """<rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" %(xmlns_rdfs)s %(xmlns_dcterms)s>
+    <rdf:Description rdf:about="http://example.com/something">
+        <dcterms:related rdf:nodeID="abc"/>
+    </rdf:Description>
+    <rdf:Description rdf:about="http://example.com/somethingElse">
+        <dcterms:related rdf:nodeID="abc"/>
+    </rdf:Description>
+    <rdf:Description rdf:nodeID="abc">
+        <rdfs:label>ABC</rdfs:label>
+    </rdf:Description>
+</rdf:RDF>""" % namespaces
+        graph = RDFParser().parse(XML(rdfXml))
+        result = Triples2RdfXml().asRdfXml(graph)
+        self.assertXmlEquals(result, rdfXml)
 
     def testReificationWithRdfID(self):
         testNamespaces = namespaces.copyUpdate(dict(test="urn:test#"))
@@ -234,9 +245,17 @@ class Triples2RdfXmlTest(SeecrTestCase):
         self.assertEquals('object', xpathFirst(result, '/rdf:RDF/rdf:Description[@rdf:about="some:uri"]/test:relation[@rdf:ID="_987"]/text()'))
         self.assertEquals('reification object', xpathFirst(result, '/rdf:RDF/rdf:Statement[@rdf:about="#_987"]/test:reificationRelation/text()'))
         self.assertEquals(['rdf:Description', 'rdf:Statement'], [tagToCurie(node.tag) for node in xpath(result, '/rdf:RDF/*')])
+        self.assertXmlEquals(rdfXml, result)
 
     def testTopLevelBNode(self):
-        self.fail()
+        rdfXml = '''<rdf:RDF %(xmlns_rdf)s %(xmlns_dcterms)s>
+            <rdf:Description>
+                <dcterms:title>a title</dcterms:title>
+            </rdf:Description>
+        </rdf:RDF>''' % namespaces
+        graph = RDFParser().parse(XML(rdfXml))
+        result = Triples2RdfXml().asRdfXml(graph)
+        self.assertXmlEquals(rdfXml, result)
 
     def testReificationWithBlankNodeSubject(self):
         testNamespaces = namespaces.copyUpdate(dict(test="urn:test#"))
@@ -251,8 +270,6 @@ class Triples2RdfXmlTest(SeecrTestCase):
         </rdf:RDF>''' % testNamespaces
         graph = RDFParser().parse(XML(rdfXml))
         result = Triples2RdfXml(namespaces=testNamespaces).asRdfXml(graph)
-        # print lxmltostring(result, pretty_print=True)
-        # import sys; sys.stdout.flush()
         self.assertEquals('reification object', xpathFirst(result, '/rdf:RDF/rdf:Statement[@rdf:about="#_987"]/test:reificationRelation/text()'))
         self.assertEquals(None, xpathFirst(result, '/rdf:RDF/rdf:Statement[@rdf:about="#_987"]/rdf:subject'))  # rdf:Statement with bnode subject should not actually refer to it...!!
         self.assertEquals('object', xpathFirst(result, '/rdf:RDF/rdf:Description/test:relation[@rdf:ID="_987"]/text()'))

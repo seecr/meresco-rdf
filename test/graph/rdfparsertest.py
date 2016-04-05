@@ -218,6 +218,25 @@ class RdfParserTest(SeecrTestCase):
             (u'#triple2', u'http://www.w3.org/1999/02/22-rdf-syntax-ns#subject', Uri(u'http://example.com/something'))
         ]), set(self.sink.triples()))
 
+    def testReificationFromBNodeSubject(self):
+        BNode.nextGenId = 0
+        RDFParser(sink=self.sink).parse(XML("""<rdf:RDF %(xmlns_rdf)s %(xmlns_rdfs)s %(xmlns_dcterms)s>
+    <rdf:Description>
+        <dcterms:title rdf:ID="triple2">Title</dcterms:title>
+    </rdf:Description>
+    <rdf:Statement rdf:about="#triple2">
+        <dcterms:source>source</dcterms:source>
+    </rdf:Statement>
+</rdf:RDF>""" % namespaces))
+        self.assertEquals(set([
+            ("_:id0", curieToUri('dcterms:title'), Literal("Title")),
+            (u'#triple2', u'http://www.w3.org/1999/02/22-rdf-syntax-ns#predicate', Uri(u'http://purl.org/dc/terms/title')),
+            (u'#triple2', u'http://www.w3.org/1999/02/22-rdf-syntax-ns#object', Literal(u'Title')),
+            (u'#triple2', u'http://www.w3.org/1999/02/22-rdf-syntax-ns#type', Uri(u'http://www.w3.org/1999/02/22-rdf-syntax-ns#Statement')),
+            (u'#triple2', u'http://purl.org/dc/terms/source', Literal(u'source')),
+            (u'#triple2', u'http://www.w3.org/1999/02/22-rdf-syntax-ns#subject', BNode("_:id0"))
+        ]), set(self.sink.triples()))
+
 
 uri = "urn:GGC:oclc-ggc:780950577"
 

@@ -171,7 +171,7 @@ How incorrect RDF/XML (or input with unsupported constructs) is parsed into a gr
 
     def reify(self, s, p, o, base, rdfID):
         r = urijoin(base, '#' + rdfID)
-        self.addTriple(r, rdf_subject_uri, Uri(s))
+        self.addTriple(r, rdf_subject_uri, BNode(s) if s.startswith('_:') else Uri(s))
         self.addTriple(r, rdf_predicate_uri, Uri(p))
         self.addTriple(r, rdf_object_uri, o)
         self.addTriple(r, rdf_type_uri, Uri(rdf_Statement_uri))
