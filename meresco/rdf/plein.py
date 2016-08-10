@@ -33,7 +33,7 @@ from lxml.etree import Element, SubElement, ElementTree, XML, cleanup_namespaces
 from weightless.core import Yield
 from meresco.core import Observable
 
-from meresco.lucene.lucenekeyvaluestore import LuceneKeyValueStore
+from meresco.lucene.pylucene.lucenekeyvaluestore import LuceneKeyValueStore
 from base64 import b64decode, b64encode
 
 from meresco.xml.namespaces import namespaces, xpath, xpathFirst, curieToTag
