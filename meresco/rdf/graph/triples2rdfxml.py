@@ -2,7 +2,7 @@
 #
 # Meresco RDF contains components to handle RDF data.
 #
-# Copyright (C) 2014-2016 Seecr (Seek You Too B.V.) http://seecr.nl
+# Copyright (C) 2014-2016, 2018 Seecr (Seek You Too B.V.) http://seecr.nl
 # Copyright (C) 2014 Stichting Bibliotheek.nl (BNL) http://www.bibliotheek.nl
 # Copyright (C) 2015 Drents Archief http://www.drentsarchief.nl
 # Copyright (C) 2015 Koninklijke Bibliotheek (KB) http://www.kb.nl
@@ -169,7 +169,8 @@ class _Triples2RdfXml(object):
         return (
             min([self.relativeTypePositions.get(type, 0) for type in resourceDescription['types']] or [0]),
             len(self._leftHandSides(BNode(s) if s.startswith('_:') else Uri(s))),
-            -len(resourceDescription['relations'])
+            -len(resourceDescription['relations']),
+            s
         )
 
 
