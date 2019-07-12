@@ -37,11 +37,9 @@ import unittest
 from warnings import simplefilter
 simplefilter('default')
 
-from annotationtofieldslisttest import AnnotationToFieldsListTest
 from literaltest import LiteralTest
 from uritest import UriTest
 from bnodetest import BNodeTest
-from pleintest import PleinTest
 
 from graph.graphcomponenttest import GraphComponentTest
 from graph.graphtest import GraphTest
