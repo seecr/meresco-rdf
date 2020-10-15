@@ -110,8 +110,9 @@ class RdfParserTest(SeecrTestCase):
         self.assertTrue(('http://purl.org/ontology/mo/Track', 'http://www.w3.org/2000/01/rdf-schema#subClassOf', Uri('http://purl.org/ontology/mo/MusicalManifestation')) in set(self.sink.triples()))
 
     def testParsingEntitiesNoProblem(self):
-        custom_type_relations_rdf = parse(open(join(testDatadir, 'custom_type_relations.rdf')))
-        RDFParser(sink=self.sink).parse(custom_type_relations_rdf)
+        with open(join(testDatadir, 'custom_type_relations.rdf')) as f:
+            custom_type_relations_rdf = parse(f)
+            RDFParser(sink=self.sink).parse(custom_type_relations_rdf)
 
         self.assertTrue(('http://purl.org/ontology/mo/Track', 'http://www.w3.org/2000/01/rdf-schema#subClassOf', Uri('http://dbpedia.org/ontology/MusicalWork')) in set(self.sink.triples()))
 

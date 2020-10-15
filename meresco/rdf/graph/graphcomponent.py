@@ -60,10 +60,10 @@ def iterRdfSources(rdfSources):
         if hasattr(rdfSource, 'asRdfXml'):
             yield rdfSource.context, 'text/xml', ''.join(compose(rdfSource.asRdfXml()))
         elif isfile(rdfSource):
-            yield basename(rdfSource), contentType(rdfSource), open(rdfSource).read()
+            yield basename(rdfSource), contentType(rdfSource), openread(rdfSource)
         else:
             for context, rdfFilePath in iterRdfDataFiles(rdfSource):
-                yield context, contentType(rdfFilePath), open(rdfFilePath).read()
+                yield context, contentType(rdfFilePath), openread(rdfFilePath)
 
 def contentType(filename):
     if filename.endswith('.rdf'):
@@ -78,3 +78,7 @@ def iterRdfDataFiles(rdfDir):
         for fn in fns:
             path = join(dirPath, fn)
             yield 'file:%s' % basename(path), path
+
+def openread(filepath):
+    with open(filepath) as f:
+        return f.read()
