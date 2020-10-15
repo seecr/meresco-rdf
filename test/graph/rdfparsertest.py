@@ -46,13 +46,13 @@ class RdfParserTest(SeecrTestCase):
 
     def testOne(self):
         RDFParser(sink=self.sink).parse(XML(INPUT_RDF))
-        objects = sorted(list(self.sink.objects(subject=uri, curie="rdfs:seeAlso")))
-        self.assertEqual(sorted([Uri('http://example.com'), Literal('http://example.org')]), objects)
+        objects = sorted(self.sink.objects(subject=uri, curie="rdfs:seeAlso"), key=str)
+        self.assertEqual([Uri('http://example.com'), Literal('http://example.org')], objects)
 
     def testConvenienceGraph(self):
         graph = RDFParser().parse(XML(INPUT_RDF))
-        objects = sorted(list(graph.objects(subject=uri, curie="rdfs:seeAlso")))
-        self.assertEqual(sorted([Uri('http://example.com'), Literal('http://example.org')]), objects)
+        objects = sorted(graph.objects(subject=uri, curie="rdfs:seeAlso"), key=str)
+        self.assertEqual([Uri('http://example.com'), Literal('http://example.org')], objects)
 
     def testTypeFromElementTag(self):
         based_xml = '''<rdf:RDF
@@ -168,9 +168,9 @@ class RdfParserTest(SeecrTestCase):
     </rdf:Description>
 </rdf:RDF>""" % namespaces))
         self.assertEqual([
+                ("_:abc", namespaces.rdfs + 'label', Literal("ABC")),
                 ("http://example.com/something", "http://www.example.com/terms/relatedTo", BNode("_:abc")),
-                ("_:abc", namespaces.rdfs + 'label', Literal("ABC"))
-            ], list(self.sink.triples()))
+            ], sorted(self.sink.triples(), key=str))
 
     def testShouldIgnorePropertyEltWithoutValue(self):
         RDFParser(sink=self.sink).parse(XML("""<rdf:RDF %(xmlns_rdf)s %(xmlns_rdfs)s

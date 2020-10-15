@@ -36,7 +36,7 @@ class GraphTest(SeecrTestCase):
         g = Graph()
         g.addTriple('x', 'y', 'z')
         g.addTriple(subject='a', predicate='b', object='c')
-        self.assertEqual([('x', 'y', 'z'), ('a', 'b', 'c')], list(g.triples()))
+        self.assertEqual({('x', 'y', 'z'), ('a', 'b', 'c')}, set(g.triples()))
 
         # 'x', 'y', 'z'  -->       # 000
         g.addTriple('x', 'y', '3') # 001
@@ -186,10 +186,10 @@ class GraphTest(SeecrTestCase):
             list(g.matchTriplePatterns(('?v', 'uri:b', None))))
         self.assertEqual(
             [{'v': Uri('uri:a')}, {'v': Uri('uri:x')}, {'v': Uri('uri:z')}],
-            sorted(g.matchTriplePatterns((None, None, '?v'), ('?v', None, None))))
+            sorted(g.matchTriplePatterns((None, None, '?v'), ('?v', None, None)), key=str))
         self.assertEqual(
             [{'v': Uri('uri:a')}, {'v': Uri('uri:x')}, {'v': Uri('uri:z')}],
-            sorted(g.matchTriplePatterns(('?v', None, None), (None, None, '?v'))))
+            sorted(g.matchTriplePatterns(('?v', None, None), (None, None, '?v')), key=str))
         self.assertEqual(
             [dict(v0=Uri('uri:a'), v1=Uri('uri:x'), v2=Uri('uri:z'))],
             list(g.matchTriplePatterns(
