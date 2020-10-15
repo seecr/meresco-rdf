@@ -2,7 +2,7 @@
 #
 # Meresco RDF contains components to handle RDF data.
 #
-# Copyright (C) 2014-2016 Seecr (Seek You Too B.V.) http://seecr.nl
+# Copyright (C) 2014-2016, 2020 Seecr (Seek You Too B.V.) https://seecr.nl
 # Copyright (C) 2014 Stichting Bibliotheek.nl (BNL) http://www.bibliotheek.nl
 # Copyright (C) 2015 Drents Archief http://www.drentsarchief.nl
 # Copyright (C) 2015 Koninklijke Bibliotheek (KB) http://www.kb.nl
@@ -26,7 +26,7 @@
 ## end license ##
 
 
-from urlparse import urljoin as urijoin
+from urllib.parse import urljoin as urijoin
 
 from lxml.etree import Element
 
@@ -102,7 +102,7 @@ How incorrect RDF/XML (or input with unsupported constructs) is parsed into a gr
             self.addTriple(subj.value, rdf_type_uri, Uri(self.uriForTag(e.tag)))
         if rdf_type_tag in e.attrib:
             self.addTriple(subj.value, rdf_type_uri, Uri(e.attrib[rdf_type_tag]))
-        for attr, value in e.attrib.items():
+        for attr, value in list(e.attrib.items()):
             if attr not in DISALLOWED and attr != rdf_type_tag:
                 objt = Literal(value, lang=e.attrib.get(x_lang_tag))
                 self.addTriple(subj.value, self.uriForTag(attr), objt)
@@ -125,7 +125,7 @@ How incorrect RDF/XML (or input with unsupported constructs) is parsed into a gr
 
     def emptyPropertyElt(self, subj, e):
         uri = self.uriForTag(e.tag)
-        if sum(1 for k in e.attrib.keys() if not k == rdf_ID_tag) == 0:
+        if sum(1 for k in list(e.attrib.keys()) if not k == rdf_ID_tag) == 0:
             obj = Literal(e.text or '', lang=e.attrib.get(x_lang_tag))
         else:
             resource = e.attrib.get(rdf_resource_tag)
@@ -133,7 +133,7 @@ How incorrect RDF/XML (or input with unsupported constructs) is parsed into a gr
                 obj = Uri(urijoin(e.base, resource))
             else:
                 obj = self.bNode(nodeID=e.attrib.get(rdf_nodeID_tag))
-            for attrib, value in filter(lambda (k, v): k not in DISALLOWED, e.attrib.items()):
+            for attrib, value in [k_v for k_v in list(e.attrib.items()) if k_v[0] not in DISALLOWED]:
                 if attrib != rdf_type_tag:
                     self.addTriple(obj.value, self.uriForTag(attrib), Literal(value, lang=e.attrib.get(x_lang_tag)))
                 else:

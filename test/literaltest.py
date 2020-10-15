@@ -2,7 +2,7 @@
 #
 # Meresco RDF contains components to handle RDF data.
 #
-# Copyright (C) 2011-2015 Seecr (Seek You Too B.V.) http://seecr.nl
+# Copyright (C) 2011-2015, 2020 Seecr (Seek You Too B.V.) https://seecr.nl
 # Copyright (C) 2015 Stichting Kennisnet http://www.kennisnet.nl
 #
 # This file is part of "Meresco RDF"
@@ -30,18 +30,18 @@ from meresco.rdf import Literal, Uri
 
 class LiteralTest(SeecrTestCase):
     def testInstantiate(self):
-        self.assertEquals('Li-ter-al', str(Literal('Li-ter-al')))
-        self.assertEquals("'Li-ter-al'@nl", str(Literal('Li-ter-al', lang='nl')))
-        self.assertEquals("Literal('Li-ter-al')", repr(Literal('Li-ter-al')))
-        self.assertEquals("Literal('Li-ter-al', lang='nl')", repr(Literal('Li-ter-al', lang='nl')))
+        self.assertEqual('Li-ter-al', str(Literal('Li-ter-al')))
+        self.assertEqual("'Li-ter-al'@nl", str(Literal('Li-ter-al', lang='nl')))
+        self.assertEqual("Literal('Li-ter-al')", repr(Literal('Li-ter-al')))
+        self.assertEqual("Literal('Li-ter-al', lang='nl')", repr(Literal('Li-ter-al', lang='nl')))
 
     def testHashForCollections(self):
         l1 = Literal('u:ri', lang='nl')
         l2 = Literal('u:ri', lang='nl')
-        self.assertEquals(l1, l2)
-        self.assertEquals(hash(l1), hash(l2))
+        self.assertEqual(l1, l2)
+        self.assertEqual(hash(l1), hash(l2))
         coll = set([l1, l2])
-        self.assertEquals(1, len(coll))
+        self.assertEqual(1, len(coll))
 
         self.assertNotEqual(hash(l1), hash(Literal('u:ri', lang='en')))
         self.assertNotEqual(hash(l1), hash(Literal('U:RI', lang='nl')))
@@ -49,8 +49,8 @@ class LiteralTest(SeecrTestCase):
     def testOnlyStringLikeObjects(self):
         self.assertRaises(ValueError, lambda: Literal(42))
         self.assertRaises(ValueError, lambda: Literal(object()))
-        self.assertEquals('u:ri', str(Literal('u:ri')))
-        self.assertEquals('u:ri', str(Literal(u'u:ri')))
+        self.assertEqual('u:ri', str(Literal('u:ri')))
+        self.assertEqual('u:ri', str(Literal('u:ri')))
 
         # Re-wrapping Literal (or Uri) disallowed
         self.assertRaises(ValueError, lambda: Literal(Literal('u:ri')))
@@ -58,18 +58,18 @@ class LiteralTest(SeecrTestCase):
 
     def testWithoutLang(self):
         l = Literal.fromDict({"type": "literal", "value": "http://www.rnaproject.org/data/rnax/odw/InformationConcept"})
-        self.assertEquals("http://www.rnaproject.org/data/rnax/odw/InformationConcept", l.value)
-        self.assertEquals(None, l.lang)
+        self.assertEqual("http://www.rnaproject.org/data/rnax/odw/InformationConcept", l.value)
+        self.assertEqual(None, l.lang)
 
     def testWithLang(self):
         l = Literal.fromDict({"type": "literal", "xml:lang": "eng", "value": "http://www.rnaproject.org/data/rnax/odw/InformationConcept"})
-        self.assertEquals("http://www.rnaproject.org/data/rnax/odw/InformationConcept", l.value)
-        self.assertEquals("eng", l.lang)
+        self.assertEqual("http://www.rnaproject.org/data/rnax/odw/InformationConcept", l.value)
+        self.assertEqual("eng", l.lang)
 
     def testEquals(self):
         l1 = Literal.fromDict({"type": "literal", "xml:lang": "eng", "value": "VALUE"})
         l2 = Literal.fromDict({"type": "literal", "xml:lang": "eng", "value": "VALUE"})
-        self.assertEquals(l1, l2)
+        self.assertEqual(l1, l2)
 
         l2 = Literal.fromDict({"type": "literal", "xml:lang": "dut", "value": "VALUE"})
         self.assertNotEqual(l1, l2)

@@ -2,7 +2,7 @@
 #
 # Meresco RDF contains components to handle RDF data.
 #
-# Copyright (C) 2013-2015 Seecr (Seek You Too B.V.) http://seecr.nl
+# Copyright (C) 2013-2015, 2020 Seecr (Seek You Too B.V.) https://seecr.nl
 # Copyright (C) 2013-2014 Stichting Bibliotheek.nl (BNL) http://www.bibliotheek.nl
 # Copyright (C) 2015 Drents Archief http://www.drentsarchief.nl
 #
@@ -32,7 +32,7 @@ from os.path import join, dirname, abspath
 from shutil import copy
 
 from lxml.etree import parse
-from StringIO import StringIO
+from io import StringIO
 
 from meresco.xml.namespaces import namespaces, curieToUri
 from meresco.rdf.graph import Literal, Uri, BNode, GraphComponent
@@ -45,7 +45,7 @@ class GraphComponentTest(SeecrTestCase):
         with stdout_replaced():
             g = GraphComponent(rdfSources=[])
         g = g.makeGraph(parseXml(RDF_XML))
-        self.assertEquals(set([
+        self.assertEqual(set([
                 ('uri:uri', namespaces.dcterms + 'title', Literal('The title')),
                 ('uri:uri', namespaces.rdf + 'type', Uri('type:type#'))
             ]),
@@ -56,11 +56,11 @@ class GraphComponentTest(SeecrTestCase):
         with stdout_replaced():
             g = GraphComponent(rdfSources=[])
         g = g.makeGraph(parseXml(RDF_XML))
-        self.assertEquals([('uri:uri', namespaces.dcterms + 'title', Literal('The title'))], list(g.triples(subject='uri:uri', predicate=namespaces.dcterms + 'title')))
-        self.assertEquals([('uri:uri', namespaces.dcterms + 'title', Literal('The title'))], list(g.triples(subject=None, predicate=namespaces.dcterms + 'title', object=Literal('The title'))))
-        self.assertEquals([('uri:uri', namespaces.rdf + 'type', Uri('type:type#'))], list(g.triples(object=Uri('type:type#'))))
-        self.assertEquals(1, len(list(g.triples(object=Uri('type:type#')))))
-        self.assertEquals(1, len(list(g.triples(subject='uri:uri', predicate=namespaces.rdf+'type', object=Uri('type:type#')))))
+        self.assertEqual([('uri:uri', namespaces.dcterms + 'title', Literal('The title'))], list(g.triples(subject='uri:uri', predicate=namespaces.dcterms + 'title')))
+        self.assertEqual([('uri:uri', namespaces.dcterms + 'title', Literal('The title'))], list(g.triples(subject=None, predicate=namespaces.dcterms + 'title', object=Literal('The title'))))
+        self.assertEqual([('uri:uri', namespaces.rdf + 'type', Uri('type:type#'))], list(g.triples(object=Uri('type:type#'))))
+        self.assertEqual(1, len(list(g.triples(object=Uri('type:type#')))))
+        self.assertEqual(1, len(list(g.triples(subject='uri:uri', predicate=namespaces.rdf+'type', object=Uri('type:type#')))))
 
     def testFindLabelUsingRealOntology(self):
         subdir = join(self.tempdir, 'subdir')
@@ -68,9 +68,9 @@ class GraphComponentTest(SeecrTestCase):
         copy(join(rdfDir, 'nl_property_labels.rdf'), subdir)
         with stdout_replaced():
             g = GraphComponent(rdfSources=[self.tempdir])
-        self.assertEquals(Literal('Titel', lang='nl'), g.findLabel(namespaces.dcterms + 'title'))
-        self.assertEquals(Literal('Maker', lang='nl'), g.findLabel(namespaces.dcterms + 'creator'))
-        self.assertEquals(Literal('Tijd', lang='nl'), g.findLabel("http://purl.org/NET/c4dm/event.owl#time"))
+        self.assertEqual(Literal('Titel', lang='nl'), g.findLabel(namespaces.dcterms + 'title'))
+        self.assertEqual(Literal('Maker', lang='nl'), g.findLabel(namespaces.dcterms + 'creator'))
+        self.assertEqual(Literal('Tijd', lang='nl'), g.findLabel("http://purl.org/NET/c4dm/event.owl#time"))
 
     def testTriplesUsingRealOntology(self):
         subdir = join(self.tempdir, 'subdir')
@@ -80,7 +80,7 @@ class GraphComponentTest(SeecrTestCase):
             g = GraphComponent(rdfSources=[self.tempdir])
 
         self.assertTrue(10 < len(list(g.triples())), list(g.triples()))
-        self.assertEquals([
+        self.assertEqual([
                 (namespaces.curieToUri('dcterms:title'),
                  namespaces.curieToUri('rdfs:label'),
                  Literal('Titel', lang='nl')
@@ -97,15 +97,15 @@ class GraphComponentTest(SeecrTestCase):
         g = gc.makeGraph(lxmlNode=parseXml(RDF_XML_NAVIGATION))
 
         result = list(g.triples(subject='uri:nav', predicate=namespaces.dcterms+'publisher'))
-        self.assertEquals(1, len(result))
-        self.assertEquals(
+        self.assertEqual(1, len(result))
+        self.assertEqual(
             ('uri:nav', namespaces.dcterms+'publisher'),
             result[0][:2])
         bnode = result[0][2]
         self.assertTrue(isinstance(bnode, BNode))
 
         result = list(g.triples(subject=bnode.value))
-        self.assertEquals(
+        self.assertEqual(
             [(bnode.value, namespaces.rdfs+'label', Literal('Pub'))],
             result)
 
@@ -127,7 +127,7 @@ class GraphComponentTest(SeecrTestCase):
 
         with stdout_replaced():
             gc = GraphComponent(rdfSources=[A()])
-        self.assertEquals([("uri:someUri", curieToUri("rdfs:label"), Literal("Some resource", lang="nl"))], list(gc.triples()))
+        self.assertEqual([("uri:someUri", curieToUri("rdfs:label"), Literal("Some resource", lang="nl"))], list(gc.triples()))
 
 def parseXml(data):
     return parse(StringIO(data))

@@ -2,7 +2,7 @@
 #
 # Meresco RDF contains components to handle RDF data.
 #
-# Copyright (C) 2011-2015 Seecr (Seek You Too B.V.) http://seecr.nl
+# Copyright (C) 2011-2015, 2020 Seecr (Seek You Too B.V.) https://seecr.nl
 # Copyright (C) 2014 Stichting Bibliotheek.nl (BNL) http://www.bibliotheek.nl
 # Copyright (C) 2015 Drents Archief http://www.drentsarchief.nl
 # Copyright (C) 2015 Koninklijke Bibliotheek (KB) http://www.kb.nl
@@ -38,7 +38,7 @@ class BNode(Identifier):
             self.value = "_:id" + str(BNode.nextGenId)
             BNode.nextGenId += 1
         else:
-            self.value = unicode(value) if value else value
+            self.value = str(value) if value else value
 
     def isBNode(self):
         return True

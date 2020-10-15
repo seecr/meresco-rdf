@@ -2,7 +2,7 @@
 #
 # Meresco RDF contains components to handle RDF data.
 #
-# Copyright (C) 2014-2016 Seecr (Seek You Too B.V.) http://seecr.nl
+# Copyright (C) 2014-2016, 2020 Seecr (Seek You Too B.V.) https://seecr.nl
 # Copyright (C) 2014 Stichting Bibliotheek.nl (BNL) http://www.bibliotheek.nl
 # Copyright (C) 2015 Drents Archief http://www.drentsarchief.nl
 # Copyright (C) 2015 Koninklijke Bibliotheek (KB) http://www.kb.nl
@@ -35,7 +35,7 @@ from meresco.xml import namespaces as defaultNamespaces
 from ._uris import LABEL_PREDICATES
 
 
-UNICODE_LABEL_PREDICATES = [unicode(p) for p in LABEL_PREDICATES]
+UNICODE_LABEL_PREDICATES = [str(p) for p in LABEL_PREDICATES]
 
 class Graph(object):
     def __init__(self, namespaces=None):
@@ -140,4 +140,4 @@ class Graph(object):
 
 
 def unicodeOrNone(aString):
-    return None if aString is None else unicode(aString)
+    return None if aString is None else str(aString)

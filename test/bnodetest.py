@@ -2,7 +2,7 @@
 #
 # Meresco RDF contains components to handle RDF data.
 #
-# Copyright (C) 2011-2015 Seecr (Seek You Too B.V.) http://seecr.nl
+# Copyright (C) 2011-2015, 2020 Seecr (Seek You Too B.V.) https://seecr.nl
 # Copyright (C) 2015 Stichting Kennisnet http://www.kennisnet.nl
 #
 # This file is part of "Meresco RDF"
@@ -31,24 +31,24 @@ from meresco.rdf import Uri, Literal, BNode
 class BNodeTest(SeecrTestCase):
     def testCreate(self):
         bnode = BNode.fromDict({"type": "bnode", "value": "node12345"})
-        self.assertNotEquals("node12345", bnode)
-        self.assertEquals("node12345", str(bnode))
-        self.assertEquals(bnode, BNode('node12345'))
+        self.assertNotEqual("node12345", bnode)
+        self.assertEqual("node12345", str(bnode))
+        self.assertEqual(bnode, BNode('node12345'))
 
     def testHashForCollections(self):
         bnode1 = BNode('node12345')
         bnode2 = BNode('node12345')
-        self.assertEquals(bnode1, bnode2)
-        self.assertEquals(hash(bnode1), hash(bnode2))
+        self.assertEqual(bnode1, bnode2)
+        self.assertEqual(hash(bnode1), hash(bnode2))
         coll = set([bnode1, bnode2])
-        self.assertEquals(1, len(coll))
+        self.assertEqual(1, len(coll))
         self.assertNotEqual(hash(bnode1), hash(BNode('NODE12345')))
 
     def testOnlyStringLikeObjects(self):
         self.assertRaises(ValueError, lambda: BNode(42))
         self.assertRaises(ValueError, lambda: BNode(object()))
-        self.assertEquals('node12345', str(BNode('node12345')))
-        self.assertEquals('node12345', str(BNode(u'node12345')))
+        self.assertEqual('node12345', str(BNode('node12345')))
+        self.assertEqual('node12345', str(BNode('node12345')))
 
         # Re-wrapping Uri (or Literal) disallowed
         self.assertRaises(ValueError, lambda: BNode(BNode('node12345')))

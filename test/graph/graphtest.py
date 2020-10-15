@@ -2,7 +2,7 @@
 #
 # Meresco RDF contains components to handle RDF data.
 #
-# Copyright (C) 2014-2015 Seecr (Seek You Too B.V.) http://seecr.nl
+# Copyright (C) 2014-2015, 2020 Seecr (Seek You Too B.V.) https://seecr.nl
 # Copyright (C) 2014 Stichting Bibliotheek.nl (BNL) http://www.bibliotheek.nl
 # Copyright (C) 2015 Drents Archief http://www.drentsarchief.nl
 # Copyright (C) 2015 Koninklijke Bibliotheek (KB) http://www.kb.nl
@@ -36,7 +36,7 @@ class GraphTest(SeecrTestCase):
         g = Graph()
         g.addTriple('x', 'y', 'z')
         g.addTriple(subject='a', predicate='b', object='c')
-        self.assertEquals([('x', 'y', 'z'), ('a', 'b', 'c')], list(g.triples()))
+        self.assertEqual([('x', 'y', 'z'), ('a', 'b', 'c')], list(g.triples()))
 
         # 'x', 'y', 'z'  -->       # 000
         g.addTriple('x', 'y', '3') # 001
@@ -47,57 +47,57 @@ class GraphTest(SeecrTestCase):
         g.addTriple('1', '2', 'z') # 110
         g.addTriple('1', '2', '3') # 111
 
-        self.assertEquals([('x', 'y', 'z')], sorted(g.triples('x', 'y', 'z')))
-        self.assertEquals([('x', 'y', 'z')], sorted(g.triples(subject='x', predicate='y', object='z')))
-        self.assertEquals([('x', 'y', '3'), ('x', 'y', 'z')], sorted(g.triples('x', 'y', None)))
-        self.assertEquals([('x', '2', 'z'), ('x', 'y', 'z')], sorted(g.triples('x', None, 'z')))
-        self.assertEquals([('x', '2', '3'), ('x', '2', 'z'), ('x', 'y', '3'), ('x', 'y', 'z')], sorted(g.triples('x', None, None)))
-        self.assertEquals([('1', 'y', 'z'), ('x', 'y', 'z')], sorted(g.triples(None, 'y', 'z')))
-        self.assertEquals([('1', 'y', '3'), ('1', 'y', 'z'), ('x', 'y', '3'), ('x', 'y', 'z')], sorted(g.triples(None, 'y', None)))
-        self.assertEquals([('1', '2', 'z'), ('1', 'y', 'z'), ('x', '2', 'z'), ('x', 'y', 'z')], sorted(g.triples(None, None, 'z')))
-        self.assertEquals(sorted(g.triples()), sorted(g.triples(None, None, None)))
-        self.assertEquals(9, len(list(g.triples())))
+        self.assertEqual([('x', 'y', 'z')], sorted(g.triples('x', 'y', 'z')))
+        self.assertEqual([('x', 'y', 'z')], sorted(g.triples(subject='x', predicate='y', object='z')))
+        self.assertEqual([('x', 'y', '3'), ('x', 'y', 'z')], sorted(g.triples('x', 'y', None)))
+        self.assertEqual([('x', '2', 'z'), ('x', 'y', 'z')], sorted(g.triples('x', None, 'z')))
+        self.assertEqual([('x', '2', '3'), ('x', '2', 'z'), ('x', 'y', '3'), ('x', 'y', 'z')], sorted(g.triples('x', None, None)))
+        self.assertEqual([('1', 'y', 'z'), ('x', 'y', 'z')], sorted(g.triples(None, 'y', 'z')))
+        self.assertEqual([('1', 'y', '3'), ('1', 'y', 'z'), ('x', 'y', '3'), ('x', 'y', 'z')], sorted(g.triples(None, 'y', None)))
+        self.assertEqual([('1', '2', 'z'), ('1', 'y', 'z'), ('x', '2', 'z'), ('x', 'y', 'z')], sorted(g.triples(None, None, 'z')))
+        self.assertEqual(sorted(g.triples()), sorted(g.triples(None, None, None)))
+        self.assertEqual(9, len(list(g.triples())))
 
         # objects()
-        self.assertEquals(['3', 'z'], sorted(g.objects(subject='x', predicate='y')))
+        self.assertEqual(['3', 'z'], sorted(g.objects(subject='x', predicate='y')))
 
     def testRemoveTriple(self):
         g = Graph()
         g.addTriple(subject='u:ri', predicate='p:redicate', object='obj')
         g.addTriple(subject='u:ri', predicate='p:redicate', object='obj2')
 
-        self.assertEquals(2, len(list(g.triples())))
-        self.assertEquals(12, len(g._tripleDict))  # Whitebox no-leaking defaultdict entries on delete
+        self.assertEqual(2, len(list(g.triples())))
+        self.assertEqual(12, len(g._tripleDict))  # Whitebox no-leaking defaultdict entries on delete
 
         g.removeTriple(subject='u:ri', predicate='p:redicate', object='obj2')
 
-        self.assertEquals(8, len(g._tripleDict))  # Whitebox no-leaking defaultdict entries on delete
+        self.assertEqual(8, len(g._tripleDict))  # Whitebox no-leaking defaultdict entries on delete
 
         # Keep 1
-        self.assertEquals(1, len(list(g.triples())))
-        self.assertEquals(1, len(list(g.triples(None, None, None))))
-        self.assertEquals(1, len(list(g.triples(None, None, 'obj'))))
-        self.assertEquals(1, len(list(g.triples(None, 'p:redicate', None))))
-        self.assertEquals(1, len(list(g.triples(None, 'p:redicate', 'obj'))))
-        self.assertEquals(1, len(list(g.triples('u:ri', None, None))))
-        self.assertEquals(1, len(list(g.triples('u:ri', None, 'obj'))))
-        self.assertEquals(1, len(list(g.triples('u:ri', 'p:redicate', None))))
-        self.assertEquals(1, len(list(g.triples('u:ri', 'p:redicate', 'obj'))))
+        self.assertEqual(1, len(list(g.triples())))
+        self.assertEqual(1, len(list(g.triples(None, None, None))))
+        self.assertEqual(1, len(list(g.triples(None, None, 'obj'))))
+        self.assertEqual(1, len(list(g.triples(None, 'p:redicate', None))))
+        self.assertEqual(1, len(list(g.triples(None, 'p:redicate', 'obj'))))
+        self.assertEqual(1, len(list(g.triples('u:ri', None, None))))
+        self.assertEqual(1, len(list(g.triples('u:ri', None, 'obj'))))
+        self.assertEqual(1, len(list(g.triples('u:ri', 'p:redicate', None))))
+        self.assertEqual(1, len(list(g.triples('u:ri', 'p:redicate', 'obj'))))
 
         # Kill 1
-        self.assertEquals(0, len(list(g.triples(None, None, 'obj2'))))
-        self.assertEquals(0, len(list(g.triples(None, 'p:redicate', 'obj2'))))
-        self.assertEquals(0, len(list(g.triples('u:ri', 'p:redicate', 'obj2'))))
+        self.assertEqual(0, len(list(g.triples(None, None, 'obj2'))))
+        self.assertEqual(0, len(list(g.triples(None, 'p:redicate', 'obj2'))))
+        self.assertEqual(0, len(list(g.triples('u:ri', 'p:redicate', 'obj2'))))
 
     def testRemoveTripleOfNonExistingDoesNotLeak(self):
         g = Graph()
 
-        self.assertEquals(0, len(list(g.triples())))
-        self.assertEquals(0, len(g._tripleDict))  # Whitebox no-leaking defaultdict entries on delete
+        self.assertEqual(0, len(list(g.triples())))
+        self.assertEqual(0, len(g._tripleDict))  # Whitebox no-leaking defaultdict entries on delete
 
         g.removeTriple(subject='u:ri', predicate='p:redicate', object='obj2')
 
-        self.assertEquals(0, len(g._tripleDict))  # Whitebox no-leaking defaultdict entries on delete
+        self.assertEqual(0, len(g._tripleDict))  # Whitebox no-leaking defaultdict entries on delete
 
     def testGraphContains(self):
         g = Graph()
@@ -142,32 +142,32 @@ class GraphTest(SeecrTestCase):
     def testGraphFindLabel(self):
         g = Graph()
         g.addTriple('u:ri', curieToUri('rdfs:label'), Literal('rdfsLabel'))
-        self.assertEquals(Literal('rdfsLabel'), g.findLabel(uri='u:ri'))
+        self.assertEqual(Literal('rdfsLabel'), g.findLabel(uri='u:ri'))
 
         g.addTriple('u:ri', curieToUri('rdfs:label'), Literal('rdfsLabelEN', lang='en'))
-        self.assertEquals(Literal('rdfsLabelEN', lang='en'), g.findLabel(uri='u:ri'))
+        self.assertEqual(Literal('rdfsLabelEN', lang='en'), g.findLabel(uri='u:ri'))
 
         g.addTriple('u:ri', curieToUri('skos:prefLabel'), Literal('skosPrefLabel'))
-        self.assertEquals(Literal('rdfsLabelEN', lang='en'), g.findLabel(uri='u:ri'))
+        self.assertEqual(Literal('rdfsLabelEN', lang='en'), g.findLabel(uri='u:ri'))
 
         g.addTriple('u:ri', curieToUri('skos:prefLabel'), Literal('skosPrefLabelNL', lang='nl'))
-        self.assertEquals(Literal('skosPrefLabelNL', lang='nl'), g.findLabel(uri='u:ri'))
+        self.assertEqual(Literal('skosPrefLabelNL', lang='nl'), g.findLabel(uri='u:ri'))
 
         g.addTriple('u:ri', curieToUri('rdfs:label'), Literal('rdfsLabelNL', lang='nl'))
-        self.assertEquals(Literal('rdfsLabelNL', lang='nl'), g.findLabel(uri='u:ri'))
+        self.assertEqual(Literal('rdfsLabelNL', lang='nl'), g.findLabel(uri='u:ri'))
 
         g.addTriple('u:ri', curieToUri('foaf:name'), Literal('foafNameNL', lang='nl'))
-        self.assertEquals(Literal('foafNameNL', lang='nl'), g.findLabel(uri='u:ri'))
+        self.assertEqual(Literal('foafNameNL', lang='nl'), g.findLabel(uri='u:ri'))
 
     def testGraphFindLabelSpecifyAllowedLabelPredicates(self):
         g = Graph()
         g.addTriple('u:ri', curieToUri('rdfs:label'), Literal('rdfsLabel'))
-        self.assertEquals(None, g.findLabel(uri='u:ri', labelPredicates=[]))
-        self.assertEquals(Literal('rdfsLabel'), g.findLabel(uri='u:ri', labelPredicates=[curieToUri('rdfs:label')]))
+        self.assertEqual(None, g.findLabel(uri='u:ri', labelPredicates=[]))
+        self.assertEqual(Literal('rdfsLabel'), g.findLabel(uri='u:ri', labelPredicates=[curieToUri('rdfs:label')]))
 
         g.addTriple('u:ri2', curieToUri('skos:altLabel'), Literal('altLabel'))
-        self.assertEquals(None, g.findLabel(uri='u:ri2', labelPredicates=[curieToUri('rdfs:label')]))
-        self.assertEquals(Literal('altLabel'), g.findLabel(uri='u:ri2', labelPredicates=[curieToUri('rdfs:label'), curieToUri('skos:altLabel')]))
+        self.assertEqual(None, g.findLabel(uri='u:ri2', labelPredicates=[curieToUri('rdfs:label')]))
+        self.assertEqual(Literal('altLabel'), g.findLabel(uri='u:ri2', labelPredicates=[curieToUri('rdfs:label'), curieToUri('skos:altLabel')]))
 
     def testMatchTriplePathRealRdfTriples(self):
         # Note: at the moment we follow the convention that only (for performance reasons) the triple's object is wrapped in Literal, Uri or BNode.
@@ -178,19 +178,19 @@ class GraphTest(SeecrTestCase):
         g.addTriple('uri:z', 'uri:d', Uri('uri:a'))
         g.addTriple('uri:a', 'uri:e', Uri('uri:x'))
 
-        self.assertEquals(
+        self.assertEqual(
             [{'v': Uri('uri:x')}],
             list(g.matchTriplePatterns(('?v', 'uri:y', Uri('uri:z')))))
-        self.assertEquals(
+        self.assertEqual(
             [{'v': Uri('uri:a')}],
             list(g.matchTriplePatterns(('?v', 'uri:b', None))))
-        self.assertEquals(
+        self.assertEqual(
             [{'v': Uri('uri:a')}, {'v': Uri('uri:x')}, {'v': Uri('uri:z')}],
             sorted(g.matchTriplePatterns((None, None, '?v'), ('?v', None, None))))
-        self.assertEquals(
+        self.assertEqual(
             [{'v': Uri('uri:a')}, {'v': Uri('uri:x')}, {'v': Uri('uri:z')}],
             sorted(g.matchTriplePatterns(('?v', None, None), (None, None, '?v'))))
-        self.assertEquals(
+        self.assertEqual(
             [dict(v0=Uri('uri:a'), v1=Uri('uri:x'), v2=Uri('uri:z'))],
             list(g.matchTriplePatterns(
                 ('?v0', None, '?v1'),

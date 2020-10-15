@@ -2,7 +2,7 @@
 #
 # Meresco RDF contains components to handle RDF data.
 #
-# Copyright (C) 2011-2013, 2015 Seecr (Seek You Too B.V.) http://seecr.nl
+# Copyright (C) 2011-2013, 2015, 2020 Seecr (Seek You Too B.V.) https://seecr.nl
 # Copyright (C) 2015 Stichting Kennisnet http://www.kennisnet.nl
 #
 # This file is part of "Meresco RDF"
@@ -27,7 +27,7 @@ import rfc3987
 
 class Uri(object):
     def __init__(self, value):
-        if not isinstance(value, basestring):
+        if not isinstance(value, str):
             raise ValueError('Expected a stringlike object')
         self.value = value
 

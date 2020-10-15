@@ -2,7 +2,7 @@
 #
 # Meresco RDF contains components to handle RDF data.
 #
-# Copyright (C) 2011-2015 Seecr (Seek You Too B.V.) http://seecr.nl
+# Copyright (C) 2011-2015, 2020 Seecr (Seek You Too B.V.) https://seecr.nl
 # Copyright (C) 2015 Stichting Kennisnet http://www.kennisnet.nl
 #
 # This file is part of "Meresco RDF"
@@ -31,25 +31,25 @@ from meresco.rdf import Uri, Literal
 class UriTest(SeecrTestCase):
     def testCreate(self):
         u = Uri.fromDict({"type": "uri", "value": "http://www.rnaproject.org/data/rnax/odw/InformationConcept"})
-        self.assertNotEquals("http://www.rnaproject.org/data/rnax/odw/InformationConcept", u)
-        self.assertEquals("http://www.rnaproject.org/data/rnax/odw/InformationConcept", str(u))
-        self.assertEquals(u, Uri('http://www.rnaproject.org/data/rnax/odw/InformationConcept'))
+        self.assertNotEqual("http://www.rnaproject.org/data/rnax/odw/InformationConcept", u)
+        self.assertEqual("http://www.rnaproject.org/data/rnax/odw/InformationConcept", str(u))
+        self.assertEqual(u, Uri('http://www.rnaproject.org/data/rnax/odw/InformationConcept'))
 
     def testHashForCollections(self):
         uri1 = Uri('u:ri')
         uri2 = Uri('u:ri')
-        self.assertEquals(uri1, uri2)
-        self.assertEquals(hash(uri1), hash(uri2))
+        self.assertEqual(uri1, uri2)
+        self.assertEqual(hash(uri1), hash(uri2))
         coll = set([uri1, uri2])
-        self.assertEquals(1, len(coll))
+        self.assertEqual(1, len(coll))
 
         self.assertNotEqual(hash(uri1), hash(Uri('U:RI')))
 
     def testOnlyStringLikeObjects(self):
         self.assertRaises(ValueError, lambda: Uri(42))
         self.assertRaises(ValueError, lambda: Uri(object()))
-        self.assertEquals('u:ri', str(Uri('u:ri')))
-        self.assertEquals('u:ri', str(Uri(u'u:ri')))
+        self.assertEqual('u:ri', str(Uri('u:ri')))
+        self.assertEqual('u:ri', str(Uri('u:ri')))
 
         # Re-wrapping Uri (or Literal) disallowed
         self.assertRaises(ValueError, lambda: Uri(Uri('u:ri')))
