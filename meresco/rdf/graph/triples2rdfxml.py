@@ -165,8 +165,8 @@ class _Triples2RdfXml(object):
                 return typeTagCurie
         return 'rdf:Description'
 
-    def _subjectUriOrder(self, xxx_todo_changeme):
-        (s, resourceDescription) = xxx_todo_changeme
+    def _subjectUriOrder(self, subjectAndResourceDescription):
+        (s, resourceDescription) = subjectAndResourceDescription
         return (
             min([self.relativeTypePositions.get(type, 0) for type in resourceDescription['types']] or [0]),
             len(self._leftHandSides(BNode(s) if s.startswith('_:') else Uri(s))),
